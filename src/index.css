@@ -1,0 +1,627 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+:root {
+  --base-white: #fff;
+  --base-black: #000;
+  --primary-1: #7e39a4;
+  --primary-2: #652e83;
+  --primary-3: #cbb0db;
+  --primary-4: #f9f0ff;
+  --text-1: #1d1d1d;
+  --text-2: #393939;
+  --text-3: #565656;
+  --text-4: #727272;
+  --text-5: #8f8f8f;
+  --bg-1: #f4f4f4;
+  --bg-2: #e9e9e9;
+  --bg-3: #f6f6f6;
+  --bg-4: #fcfcfd;
+  --stroke-1: #f4f4f4;
+  --stroke-2: #eaecf0;
+  --error: #bb251a;
+  --error-bg: #ffe1df;
+  --warning: #b54708;
+  --warning-bg: #ffe4cd;
+  --success: #027a48;
+  --success-bg: #e1fff3;
+  --tooltip: #202020;
+}
+
+* {
+  font-family: "Inter", sans-serif;
+}
+
+/* buttons - common classes  */
+
+.ant-btn {
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 16px;
+  gap: 8px;
+  font-weight: 600;
+  height: 40px;
+  font-size: 14px;
+  line-height: 140%;
+  letter-spacing: 0.0025em;
+  border-radius: 8px;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.m-icon-btn {
+  padding: 8px;
+}
+
+.ant-btn.hidden {
+  display: none;
+}
+
+.m-btn-large {
+  height: 48px;
+  padding: 12px 16px;
+}
+
+/* primary button */
+
+.ant-btn-primary {
+  color: var(--base-white);
+  background: var(--primary-1);
+  border: 1px solid var(--primary-1);
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.ant-btn-primary:not(:disabled):hover,
+.ant-btn-primary:not(:disabled):active {
+  background: var(--primary-2);
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.ant-btn-primary:not(:disabled):focus-visible {
+  outline: none;
+}
+
+.ant-btn-primary:disabled {
+  background: var(--primary-3);
+  color: var(--base-white);
+}
+
+/* default button */
+
+.ant-btn-default {
+  color: var(--primary-1);
+  border-color: var(--primary-1);
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.ant-btn-default:not(:disabled):hover,
+.ant-btn-default:not(:disabled):active {
+  background: var(--primary-4);
+  color: var(--primary-1);
+  border-color: var(--primary-1);
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.ant-btn-default:not(:disabled):focus-visible {
+  outline: none;
+}
+
+.ant-btn-default:disabled {
+  color: var(--primary-3);
+  border-color: var(--primary-3);
+  background: var(--base-white);
+}
+
+/* text button */
+
+.ant-btn-text {
+  color: var(--primary-1);
+}
+
+.ant-btn-text:not(:disabled):hover,
+.ant-btn-text:not(:disabled):active {
+  background: var(--primary-4);
+}
+
+.ant-btn-text:disabled {
+  color: var(--primary-3);
+}
+
+/* menu or nav items */
+
+.ant-menu-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ant-menu.ant-menu-sub {
+  background-color: transparent !important;
+}
+
+.ant-menu-vertical .ant-menu-item {
+  padding: 8px 12px;
+  background: var(--base-white);
+  border-radius: 6px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+.ant-menu-item .ant-menu-title-content {
+  margin-inline-start: 0 !important;
+}
+
+.ant-menu-vertical .ant-menu-item:hover {
+  background-color: var(--bg-3);
+}
+
+.ant-menu-item.ant-menu-item-selected {
+  background-color: var(--primary-4);
+  color: var(--primary-1);
+}
+
+.ant-menu-light .ant-menu-submenu-title {
+  margin: 0;
+  padding: 8px 12px !important;
+}
+
+.ant-menu-sub .ant-menu-item-only-child {
+  padding-left: 36px !important;
+}
+
+.ant-menu-light .ant-menu-submenu-selected .ant-menu-submenu-title {
+  color: var(--primary-1);
+}
+
+.ant-menu-item:not(.ant-menu-item-selected):active {
+  background-color: var(--primary-4) !important;
+  color: var(--primary-1);
+}
+
+.ant-menu-light .ant-menu-submenu .ant-menu-submenu-title:hover {
+  background-color: var(--bg-3);
+}
+
+.ant-menu-light .ant-menu-submenu .ant-menu-submenu-title:active {
+  color: var(--primary-1);
+  background-color: transparent;
+}
+
+.profile-upload .ant-upload {
+  overflow: hidden;
+}
+
+.phone-input-label::before {
+  display: inline-block;
+  margin-inline-end: 4px;
+  color: #ff4d4f;
+  font-size: 14px;
+  font-family: SimSun, sans-serif;
+  line-height: 1;
+  content: "*";
+}
+
+.phone-input-wrapper input {
+  outline: none;
+}
+
+.exp-wrapper ul {
+  list-style: disc;
+}
+
+.exp-wrapper ol {
+  list-style: decimal;
+}
+
+.m-h1 {
+  font-size: 48px;
+  letter-spacing: 0em;
+}
+
+.m-h2 {
+  font-size: 40px;
+  letter-spacing: 0.005em;
+}
+
+.m-h3 {
+  font-size: 32px;
+  letter-spacing: 0.0025em;
+}
+
+.m-h4 {
+  font-size: 24px;
+  letter-spacing: 0em;
+}
+
+.m-h5 {
+  font-size: 20px;
+  letter-spacing: 0.005em;
+}
+
+.m-h6 {
+  font-size: 16px;
+  letter-spacing: 0.005em;
+}
+
+.m-title1 {
+  font-size: 18px;
+  letter-spacing: 0.0025em;
+}
+
+.m-title2 {
+  font-size: 16px;
+  letter-spacing: 0.005em;
+}
+
+.m-title3 {
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+.m-body1 {
+  font-size: 24px;
+  letter-spacing: 0.01em;
+}
+
+.m-body2 {
+  font-size: 18px;
+  letter-spacing: 0.008em;
+}
+
+.m-body3 {
+  font-size: 16px;
+  letter-spacing: 0.005em;
+}
+
+.m-body4 {
+  font-size: 14px;
+  letter-spacing: 0.0025em;
+}
+
+.m-body5 {
+  font-size: 12px;
+  letter-spacing: 0.002em;
+}
+
+.m-body6 {
+  font-size: 10px;
+  letter-spacing: 0.004em;
+}
+
+.m-button {
+  font-size: 14px;
+  letter-spacing: 0.0025em;
+}
+
+.m-hyperlink {
+  font-size: 14px;
+  letter-spacing: 0.0025em;
+}
+
+.m-hyperlink-cta {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 140%;
+  /* identical to box height, or 20px */
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.0025em;
+  text-decoration-line: underline;
+}
+
+.m-label1-text {
+  width: 27px;
+  height: 12px;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 120%;
+  align-items: center;
+  letter-spacing: 0.004em;
+  color: #7e39a4;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 10px;
+  width: 47px;
+  height: 20px;
+  background: #f9f0ff;
+  border-radius: 16px;
+}
+
+@media screen and (min-width: 1024px) {
+  .ant-layout-sider.ant-layout-sider-light.min-h-screen {
+    width: 264px !important;
+    max-width: 264px !important;
+    min-width: 264px !important;
+  }
+}
+
+.m-label {
+  font-weight: 500;
+  font-size: 10px;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 10px;
+  /* width: ; */
+  height: 20px;
+  border-radius: 16px;
+}
+
+.m-label-primary {
+  color: var(--primary-1);
+  background: var(--primary-4);
+}
+
+.m-label-default {
+  color: var(--base-black);
+  background: var(--base-white);
+}
+
+.m-label3-danger {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.m-label4-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.m-label5-success {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.m-check {
+  border-radius: 16px;
+  padding: 4px 8px 4px 8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 8px;
+  gap: 4px;
+  /* width: 28px; */
+  height: 20px;
+  border-radius: 16px;
+}
+
+.m-check-primary {
+  background: var(--primary-4);
+  color: var(--primary-1);
+}
+
+.m-check-default {
+  background: var(--bg-1);
+  color: var(--base-black);
+}
+
+.m-check-danger {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.m-check-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.m-check-success {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.m-circle {
+  border-radius: 16px;
+  padding: 4px 8px 4px 8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 8px;
+  gap: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 16px;
+}
+
+.m-circle-primary {
+  background: var(--primary-4);
+  color: var(--primary-1);
+}
+
+.m-circle-default {
+  background: var(--bg-1);
+  color: var(--base-black);
+}
+
+.m-circle-danger {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.m-circle-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.m-circle-success {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.ant-table-wrapper {
+  border: 1px solid var(--stroke-2);
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+  border-radius: 8px;
+  overflow-x: auto;
+  background-color: white;
+}
+
+.ant-table-thead .ant-table-cell {
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 24px !important;
+  gap: 12px;
+  background: var(--bg-3) !important;
+}
+
+.ant-table-tbody .ant-table-cell {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px 24px !important;
+  background: #ffffff !important;
+}
+
+.ant-card {
+  background: #ffffff;
+  box-shadow: 0px 4px 8px -2px rgba(16, 24, 40, 0.1),
+    0px 2px 4px -2px rgba(16, 24, 40, 0.06);
+  border-radius: 24px;
+}
+
+.m-stepper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 56px;
+  padding: 8px 16px 8px 12px;
+  border-radius: 4px 4px 0px 0px;
+}
+
+.m-stepper-small-text {
+  height: 14px;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 140%;
+  letter-spacing: 0.004em;
+}
+
+.m-stepper-large-text {
+  height: 20px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 140%;
+  letter-spacing: 0.0025em;
+}
+
+.m-stepper-bg-primary {
+  color: var(--primary-1);
+  border-color: var(--primary-1);
+  background: var(--primary-4);
+  border-bottom-width: 2px;
+}
+
+.m-stepper-small-text-primary {
+  color: var(--primary-1);
+}
+
+.m-stepper-large-text-primary {
+  color: var(--primary-1);
+}
+
+.m-stepper-bg-default {
+  color: var(--base-white);
+  /* border-color: var(--base-white); */
+  background: var(--base-white);
+}
+
+.m-stepper-small-text-default {
+  color: var(--text-2);
+}
+
+.m-stepper-large-text-default {
+  color: var(--text-2);
+}
+
+.m-border-text {
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* padding: 0px; */
+  /* width: 197px; */
+  height: 46px;
+  border-radius: 4px 4px 0px 0px;
+  /* Inside auto layout */
+  /* flex: none; */
+  /* order: 0; */
+  /* flex-grow: 0; */
+}
+
+.avatar-uploader {
+  width: 9rem !important;
+  padding-left: 1rem;
+}
+
+.ant-select-selection-placeholder {
+  min-width: 6rem !important;
+}
+
+.ant-select-selection-item {
+  min-width: 6rem !important;
+}
+
+.coach-list-step-table .ant-table-selection-column {
+  padding-left: 12px !important;
+}
+
+.ant-menu-root > .ant-menu-item {
+  padding-left: 8px !important;
+  gap: 10px;
+}
+
+.meeraq-bg {
+  background-image: url(../src/assets/meeraq_bg.jpg);
+  background-size: cover;
+  background-position: center;
+}
+
+.coach-profile-modal .ant-modal-content {
+  padding: 0;
+}
+
+.competency-score-slider-wrapper .ant-slider .ant-slider-track {
+  background-color: var(--primary-1) !important;
+}
+
+.competency-score-slider-wrapper .ant-slider-dot.ant-slider-dot-active {
+  border-color: var(--primary-1) !important;
+}
+
+.competency-score-slider-wrapper .ant-slider .ant-slider-handle::after {
+  box-shadow: 0 0 0 2px var(--primary-1) !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+	width: 8px; /* Set width of the scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background-color: var(--primary-1); /* Set color of the thumb */
+	border-radius: 4px; /* Round the edges of the thumb */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+	background-color: #F0F0F0; /* Set color of the track */
+	border-radius: 4px; /* Round the edges of the track */
+}
+
+.icon-custom-color {
+  /* color: red; */
+  color: var(--primary-1);
+}
