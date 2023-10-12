@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { notification } from "antd";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+
 
 export const login = createAsyncThunk(
   "user/login",
@@ -62,6 +62,24 @@ export const loginWithOtp = createAsyncThunk(
           : "Something went wrong!",
       });
       return rejectWithValue({ error: error.response.data.error });
+    }
+  }
+);
+
+export const getSession = createAsyncThunk(
+  "user/getSession",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/api/session/`,
+        {
+          withCredentials: true,
+        }
+      );
+      const data = response.data;
+      return data;
+    } catch (err) {
+      return rejectWithValue("Error");
     }
   }
 );
