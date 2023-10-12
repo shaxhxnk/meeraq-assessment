@@ -73,8 +73,8 @@ export const Competencies = () => {
     if (!searchText) {
       setSearchedData(null);
     } else {
-      const searchData = getCompetencyData.filter((competency) =>
-        competency.name.toLowerCase().includes(searchText.toLowerCase())
+      const searchData = getCompetencyData?.filter((competency) =>
+        competency?.name?.toLowerCase()?.includes(searchText?.toLowerCase())
       );
       setSearchedData(searchData);
     }
@@ -223,7 +223,7 @@ export const Competencies = () => {
           
         />
         <Modal
-          title={editModalVisible ? "Edit Competency" : "Add Competency"}
+          title={editModalVisible ? "Edit Competency" : "Add New Competency"}
           open={editModalVisible || addModalVisible}
           onOk={handleAddEditModalConfirm}
           onCancel={() => handleAddEditModalCancel()}
