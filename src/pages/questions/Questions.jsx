@@ -10,6 +10,7 @@ import {
   Modal,
   Form,
   Select,
+  Spin,
 } from "antd";
 import { AddRounded, SearchOutlined } from "@mui/icons-material";
 import { useGetApi } from "../../hooks/useGetApi";
@@ -144,9 +145,13 @@ export const Questions = () => {
       render: (_, question) => {
         return (
           <div>
-            <p className="mt-2 mb-2"><strong>Self Question:</strong> {question.self_question}</p>
-            <hr/>
-            <p className="mt-2 mb-2"><strong>Observer Question:</strong> {question.observer_question}</p>
+            <p className="mt-2 mb-2">
+              <strong>Self Question:</strong> {question.self_question}
+            </p>
+            <hr />
+            <p className="mt-2 mb-2">
+              <strong>Observer Question:</strong> {question.observer_question}
+            </p>
           </div>
         );
       },
@@ -209,112 +214,121 @@ export const Questions = () => {
     }
   }, [deleteQuestionData]);
 
-  return (
-    <>
-      <Header>All Questions</Header>
-      <div className="m-4">
-        <div className="text-right">
-          <Button
-            className="mt-2 mr-2"
-            onClick={() => handleAdd()}
-            type="primary"
-          >
-            <AddRounded />
-            New Question
-          </Button>
-        </div>
-        <div className="">
-          <Input
-            placeholder="Search..."
-            value={searchText}
-            onChange={(event) => handleSearch(event.target.value)}
-            prefix={<SearchOutlined style={{ color: "gray" }} />}
-            suffix={
-              searchText && (
-                <CloseCircleOutlined
-                  style={{ color: "gray", cursor: "pointer" }}
-                  onClick={clearSearch}
-                />
-              )
-            }
-            className="!w-[250px] mt-2 ml-2"
-          />
-        </div>
-
-        <Table
-          className="mt-4"
-          columns={columns}
-          dataSource={searchedData || getQuestionData}
-          pagination={{ pageSize: 10 }}
-        />
-        <Modal
-          title={editModalVisible ? "Edit Question" : "Add Question"}
-          open={editModalVisible || addModalVisible}
-          onOk={handleAddEditModalConfirm}
-          onCancel={() => handleAddEditModalCancel()}
-          okText="Confirm"
-        >
-          <div className="flex flex-col space-y-4">
-            <div className="space-y-2">
-              <label className="font-bold">Self Question:</label>
-              <TextArea
-                value={addEditDeleteQuestionData?.self_question}
-                onChange={(e) =>
-                  setAddEditDeleteQuestionData({
-                    ...addEditDeleteQuestionData,
-                    self_question: e.target.value,
-                  })
-                }
-                className="p-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="font-bold">Observer Question:</label>
-              <TextArea
-                value={addEditDeleteQuestionData?.observer_question}
-                onChange={(e) =>
-                  setAddEditDeleteQuestionData({
-                    ...addEditDeleteQuestionData,
-                    observer_question: e.target.value,
-                  })
-                }
-                className="p-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="font-bold">Competency:</label>
-              <Select
-                value={addEditDeleteQuestionData?.competency?.id}
-                onChange={(value) =>
-                  setAddEditDeleteQuestionData({
-                    ...addEditDeleteQuestionData,
-                    competency: value,
-                  })
-                }
-                
-                className="p-2 !w-[200px]"
+  if (getQuestionLoading) {
+    return <Spin />;
+  } else {
+    return (
+      <>
+        <Header>
+          <div className="flex justify-between">
+            All Questions
+            <div className="text-right">
+              <Button
+                className=" mr-2"
+                onClick={() => handleAdd()}
+                type="primary"
               >
-                {getCompetencyData?.map((competency) => (
-                  <Option key={competency?.id} value={competency?.id}>
-                    {competency?.name}
-                  </Option>
-                ))}
-              </Select>
+                <AddRounded />
+                New Question
+              </Button>
             </div>
           </div>
-        </Modal>
-        <Modal
-          title="Delete Competency"
-          open={deleteModalVisible}
-          onOk={handleDeleteConfirm}
-          onCancel={() => setDeleteModalVisible(false)}
-          okText="Yes"
-        >
-          Are You sure you want to delete this Question ?
-        </Modal>
-      </div>
-    </>
-  );
+        </Header>
+        <div className="m-4">
+          <div className="">
+            <Input
+              placeholder="Search..."
+              value={searchText}
+              onChange={(event) => handleSearch(event.target.value)}
+              prefix={<SearchOutlined style={{ color: "gray" }} />}
+              suffix={
+                searchText && (
+                  <CloseCircleOutlined
+                    style={{ color: "gray", cursor: "pointer" }}
+                    onClick={clearSearch}
+                  />
+                )
+              }
+              className="!w-[250px] mt-2 ml-2"
+            />
+          </div>
+
+          <Table
+            className="mt-4"
+            columns={columns}
+            dataSource={searchedData || getQuestionData}
+            pagination={{ pageSize: 10 }}
+          />
+          <Modal
+            title={editModalVisible ? "Edit Question" : "Add New Question"}
+            open={editModalVisible || addModalVisible}
+            onOk={handleAddEditModalConfirm}
+            onCancel={() => handleAddEditModalCancel()}
+            okText="Confirm"
+            confirmLoading={editQuestionLoading}
+          >
+            <div className="flex flex-col space-y-4">
+              <div className="space-y-2">
+                <label className="font-bold">Self Question:</label>
+                <TextArea
+                  value={addEditDeleteQuestionData?.self_question}
+                  onChange={(e) =>
+                    setAddEditDeleteQuestionData({
+                      ...addEditDeleteQuestionData,
+                      self_question: e.target.value,
+                    })
+                  }
+                  className="p-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-bold">Observer Question:</label>
+                <TextArea
+                  value={addEditDeleteQuestionData?.observer_question}
+                  onChange={(e) =>
+                    setAddEditDeleteQuestionData({
+                      ...addEditDeleteQuestionData,
+                      observer_question: e.target.value,
+                    })
+                  }
+                  className="p-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-bold">Competency:</label>
+                <Select
+                  value={addEditDeleteQuestionData?.competency?.id}
+                  onChange={(value) =>
+                    setAddEditDeleteQuestionData({
+                      ...addEditDeleteQuestionData,
+                      competency: value,
+                    })
+                  }
+                  className="p-2 !w-[200px]"
+                >
+                  {getCompetencyData?.map((competency) => (
+                    <Option key={competency?.id} value={competency?.id}>
+                      {competency?.name}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+          </Modal>
+          <Modal
+            title="Delete Competency"
+            open={deleteModalVisible}
+            onOk={handleDeleteConfirm}
+            onCancel={() => setDeleteModalVisible(false)}
+            okText="Yes"
+            confirmLoading={deleteQuestionLoading}
+          >
+            Are you sure you want to delete this Question ?
+          </Modal>
+        </div>
+      </>
+    );
+  }
 };

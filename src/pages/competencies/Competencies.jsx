@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import React from "react";
 import { Header } from "../../components/header/Header";
-import { Button, Input, Table, Menu, Dropdown, Modal, Form } from "antd";
+import { Button, Input, Table, Menu, Dropdown, Modal, Form, Spin } from "antd";
 import { AddRounded, SearchOutlined } from "@mui/icons-material";
 import { useGetApi } from "../../hooks/useGetApi";
 import { usePostApi } from "../../hooks/usePostApi";
@@ -122,7 +122,6 @@ export const Competencies = () => {
       title: "Competency Name",
       dataIndex: "name",
       key: "name",
-   
     },
     {
       title: "Created on",
@@ -183,73 +182,83 @@ export const Competencies = () => {
     }
   }, [deleteCompetencyData]);
 
-  return (
-    <>
-      <Header>All Competencies</Header>
-      <div className="m-4">
-        <div className="text-right">
-          <Button
-            className="mt-2 mr-2"
-            onClick={() => handleAdd()}
-            type="primary"
-          >
-            <AddRounded />
-            New Compentency
-          </Button>
-        </div>
-        <div className="">
-          <Input
-            placeholder="Competency Name Search..."
-            value={searchText}
-            onChange={(event) => handleSearch(event.target.value)}
-            prefix={<SearchOutlined style={{ color: "gray" }} />}
-            suffix={
-              searchText && (
-                <CloseCircleOutlined
-                  style={{ color: "gray", cursor: "pointer" }}
-                  onClick={clearSearch}
-                />
-              )
-            }
-            className="!w-[250px] mt-2 ml-2"
-          />
-        </div>
+  if (getCompetencyLoading) {
+    return <Spin />;
+  } else {
+    return (
+      <>
+        <Header>
+          <div className="flex justify-between">
+            All Competencies
+            <div className="text-right">
+              <Button
+                className="mr-2"
+                onClick={() => handleAdd()}
+                type="primary"
+              >
+                <AddRounded />
+                New Compentency
+              </Button>
+            </div>
+          </div>
+        </Header>
+        <div className="m-4">
+          <div className="">
+            <Input
+              placeholder="Competency Name Search..."
+              value={searchText}
+              onChange={(event) => handleSearch(event.target.value)}
+              prefix={<SearchOutlined style={{ color: "gray" }} />}
+              suffix={
+                searchText && (
+                  <CloseCircleOutlined
+                    style={{ color: "gray", cursor: "pointer" }}
+                    onClick={clearSearch}
+                  />
+                )
+              }
+              className="!w-[250px] mt-2 ml-2"
+            />
+          </div>
 
-        <Table
-          className="mt-4"
-          columns={columns}
-          dataSource={searchedData || getCompetencyData}
-          pagination={{ pageSize: 10 }}
-          
-        />
-        <Modal
-          title={editModalVisible ? "Edit Competency" : "Add New Competency"}
-          open={editModalVisible || addModalVisible}
-          onOk={handleAddEditModalConfirm}
-          onCancel={() => handleAddEditModalCancel()}
-          okText="Confirm"
-        >
-          <Input
-            value={addEditDeleteCompetencyData?.name}
-            onChange={(e) =>
-              setAddEditDeleteCompetencyData({
-                ...addEditDeleteCompetencyData,
-                name: e.target.value,
-              })
-            }
+          <Table
+            className="mt-4"
+            columns={columns}
+            dataSource={searchedData || getCompetencyData}
+            pagination={{ pageSize: 10 }}
           />
-        </Modal>
-        <Modal
-          title="Delete Competency"
-          open={deleteModalVisible}
-          onOk={handleDeleteConfirm}
-          onCancel={() => setDeleteModalVisible(false)}
-          okText="Yes"
-        >
-          Are You sure you want to delete{" "}
-          <strong>{addEditDeleteCompetencyData?.name}</strong> Competency ?
-        </Modal>
-      </div>
-    </>
-  );
+          <Modal
+            title={editModalVisible ? "Edit Competency" : "Add New Competency"}
+            open={editModalVisible || addModalVisible}
+            onOk={handleAddEditModalConfirm}
+            onCancel={() => handleAddEditModalCancel()}
+            okText="Confirm"
+            confirmLoading={editCompetencyLoading || createCompetencyLoading}
+          >
+            <p>Enter Competency name:</p>
+            <Input
+              value={addEditDeleteCompetencyData?.name}
+              onChange={(e) =>
+                setAddEditDeleteCompetencyData({
+                  ...addEditDeleteCompetencyData,
+                  name: e.target.value,
+                })
+              }
+            />
+          </Modal>
+          <Modal
+            title="Delete Competency"
+            open={deleteModalVisible}
+            onOk={handleDeleteConfirm}
+            onCancel={() => setDeleteModalVisible(false)}
+            okText="Yes"
+            confirmLoading={deleteCompetencyLoading}
+          >
+            Are you sure you want to delete{" "}
+            <strong>{addEditDeleteCompetencyData?.name}</strong> Competency ?
+          </Modal>
+        </div>
+      </>
+    );
+  }
 };
