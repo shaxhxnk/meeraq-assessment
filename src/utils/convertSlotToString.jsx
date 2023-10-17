@@ -61,3 +61,14 @@ export function formateTime(inputDate) {
 
   return formattedTime;
 };
+
+export function formatTimestamp(timestamp) {
+  return new Date(timestamp).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}

@@ -21,17 +21,9 @@ import { MoreOutlined, FileTextOutlined } from "@ant-design/icons";
 import { AddQuestionnaire } from "./AddQuestionnaire";
 import { EditQuestionnaire } from "./EditQuestionnaire";
 import { ViewQuestionnaires } from "./ViewQuestionnaires";
+import { formatTimestamp } from "../../utils/convertSlotToString";
 
-function formatTimestamp(timestamp) {
-  return new Date(timestamp).toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
+
 
 export const Questionnaire = () => {
   const [searchText, setSearchText] = useState("");
