@@ -11,6 +11,7 @@ import {
   notification,
   Radio,
   Space,
+  Tooltip,
 } from "antd";
 import moment from "moment";
 import { AddRounded, SearchOutlined } from "@mui/icons-material";
@@ -23,14 +24,16 @@ import {
 import { useGetApi } from "../../hooks/useGetApi";
 import { usePostApi } from "../../hooks/usePostApi";
 import dayjs from "dayjs";
+import { useLocation, useNavigate } from "react-router-dom";
+import { usePutApi } from "../../hooks/usePutApi";
 
 function disabledDate(current) {
   return current && current < moment().endOf("day");
 }
-export const CreateAssessment = ({ onBackNewAssessment }) => {
+export const CreateAssessment = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [assessmentDetailsForm] = Form.useForm();
-  const [assessmentData, setAssessmentData] = useState(null);
+
   const [assessmentTypeValue, setAssessmentTypeValue] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [searchedData, setSearchedData] = useState(null);
@@ -39,6 +42,14 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
     useState(null);
   const [questionCount, setQuestionCount] = useState(1);
   const [questions, setQuestions] = useState({});
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isEditMode = location.pathname === "/edit-assessment";
+
+  const [assessmentData, setAssessmentData] = useState(
+    location?.state?.assessment ? location?.state?.assessment : null
+  );
+  const [editAssessmentDataValue, setEditAssessmentDataValue] = useState(null);
 
   const {
     data: createAssessmentData,
@@ -47,6 +58,16 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
     resetState: resetCreateAssessmentState,
   } = usePostApi(
     `${process.env.REACT_APP_BASE_URL}/assessmentApi/create-assessment/`
+  );
+
+  const {
+    data: editAssessmentData,
+    isLoading: editAssessmentLoading,
+    error: editAssessmentError,
+    putData: editAssessment,
+    resetState: resetEditAssessmentState,
+  } = usePutApi(
+    `${process.env.REACT_APP_BASE_URL}/assessmentApi/edit-assessment/`
   );
 
   const {
@@ -74,10 +95,18 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
   };
 
   const handleSubmission = () => {
-    createAssessment({
-      ...assessmentData,
-      descriptive_questions: Object.values(questions),
-    });
+    if (isEditMode) {
+      editAssessment({
+        ...editAssessmentDataValue,
+        descriptive_questions: Object.values(questions),
+        id: assessmentData?.id,
+      });
+    } else {
+      createAssessment({
+        ...assessmentData,
+        descriptive_questions: Object.values(questions),
+      });
+    }
   };
 
   const questionInputs = [];
@@ -133,46 +162,150 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
       assessment_end_date &&
       rating_type
     ) {
-      setAssessmentData({
-        name,
-        assessment_type,
-        number_of_observers,
-        assessment_end_date,
-        rating_type,
-      });
-      setActiveStep(2);
+      if (isEditMode) {
+        editAssessment({
+          name: name,
+          assessment_type: assessment_type,
+          number_of_observers: number_of_observers,
+          assessment_end_date: assessment_end_date,
+          rating_type: rating_type,
+          questionnaire: assessmentData?.questionnaire?.id,
+          descriptive_questions: assessmentData?.descriptive_questions,
+          id: assessmentData?.id,
+        });
+      } else {
+        setAssessmentData({
+          name,
+          assessment_type,
+          number_of_observers,
+          assessment_end_date,
+          rating_type,
+        });
+        setActiveStep(2);
+      }
     } else {
       notification.error({
         message: "Invalid Input: Please fill in all required fields.",
       });
     }
   };
-  console.log("assessmentData", assessmentData);
+
   const handleSelectQuestionnaireNext = () => {
-    setAssessmentData({
-      ...assessmentData,
-      questionnaire: currentQuestionnaireData?.id,
+    if (isEditMode) {
+      editAssessment({
+        ...editAssessmentDataValue,
+        questionnaire: currentQuestionnaireData?.id,
+        descriptive_questions: assessmentData?.descriptive_questions,
+        id: assessmentData?.id,
+      });
+    } else {
+      setAssessmentData({
+        ...assessmentData,
+        questionnaire: currentQuestionnaireData?.id,
+      });
+      setActiveStep(3);
+    }
+  };
+
+  const handleSkipToStep3From2 = () => {
+    setEditAssessmentDataValue({
+      ...editAssessmentDataValue,
+      questionnaire: assessmentData?.questionnaire?.id,
     });
+
     setActiveStep(3);
+    setQuestionCount(assessmentData?.descriptive_questions?.length);
+    const descriptiveQuestions = assessmentData?.descriptive_questions || [];
+
+    const questionsObject = descriptiveQuestions.reduce(
+      (result, question, index) => {
+        result[index + 1] = question;
+        return result;
+      },
+      {}
+    );
+
+    setQuestions(questionsObject);
   };
 
   const handleGoBackToStep1 = () => {
     setActiveStep(1);
-    assessmentDetailsForm.setFieldsValue({
-      name: assessmentData?.name,
-      assessment_type: assessmentData?.assessment_type,
-      number_of_observers: assessmentData?.number_of_observers,
-      assessment_end_date: dayjs(assessmentData?.assessment_end_date),
-      rating_type: assessmentData?.rating_type,
-    });
+    if (isEditMode) {
+      assessmentDetailsForm.setFieldsValue({
+        name: editAssessmentDataValue?.name,
+        assessment_type: editAssessmentDataValue?.assessment_type,
+        number_of_observers: editAssessmentDataValue?.number_of_observers,
+        assessment_end_date: dayjs(
+          editAssessmentDataValue?.assessment_end_date
+        ),
+        rating_type: editAssessmentDataValue?.rating_type,
+      });
+    } else {
+      assessmentDetailsForm.setFieldsValue({
+        name: assessmentData?.name,
+        assessment_type: assessmentData?.assessment_type,
+        number_of_observers: assessmentData?.number_of_observers,
+        assessment_end_date: dayjs(assessmentData?.assessment_end_date),
+        rating_type: assessmentData?.rating_type,
+      });
+    }
   };
   const handleGoBackToStep2 = () => {
     setActiveStep(2);
-    setQuestionnaireValue(assessmentData?.questionnaire);
-    const selectedQuestionnaire = getQuestionnaireData?.find(
-      (questionnaire) => questionnaire?.id === assessmentData?.questionnaire
+    if (isEditMode) {
+      setQuestionnaireValue(editAssessmentDataValue?.questionnaire);
+      const selectedQuestionnaire = getQuestionnaireData?.find(
+        (questionnaire) =>
+          questionnaire?.id === editAssessmentDataValue?.questionnaire
+      );
+      setCurrentQuestionnaireData(selectedQuestionnaire);
+    } else {
+      setQuestionnaireValue(assessmentData?.questionnaire);
+      const selectedQuestionnaire = getQuestionnaireData?.find(
+        (questionnaire) => questionnaire?.id === assessmentData?.questionnaire
+      );
+      setCurrentQuestionnaireData(selectedQuestionnaire);
+    }
+  };
+
+  const handleSkipToStep3From1 = () => {
+    setActiveStep(3);
+    setEditAssessmentDataValue({
+      name: assessmentData?.name,
+      assessment_type: assessmentData?.assessment_type,
+      number_of_observers: assessmentData?.number_of_observers,
+      assessment_end_date: assessmentData?.assessment_end_date,
+      rating_type: assessmentData?.rating_type,
+      questionnaire: assessmentData?.questionnaire?.id,
+    });
+    setQuestionnaireValue(assessmentData?.questionnaire?.id);
+    setCurrentQuestionnaireData(assessmentData?.questionnaire);
+    setQuestionCount(assessmentData?.descriptive_questions?.length);
+    const descriptiveQuestions = assessmentData?.descriptive_questions || [];
+
+    const questionsObject = descriptiveQuestions.reduce(
+      (result, question, index) => {
+        result[index + 1] = question;
+        return result;
+      },
+      {}
     );
-    setCurrentQuestionnaireData(selectedQuestionnaire);
+
+    setQuestions(questionsObject);
+  };
+
+  const handleSkipToStep2From1 = () => {
+    setActiveStep(2);
+    setEditAssessmentDataValue({
+      name: assessmentData?.name,
+      assessment_type: assessmentData?.assessment_type,
+      number_of_observers: assessmentData?.number_of_observers,
+      assessment_end_date: assessmentData?.assessment_end_date,
+      rating_type: assessmentData?.rating_type,
+      questionnaire: assessmentData?.questionnaire?.id,
+    });
+    setQuestionnaireValue(assessmentData?.questionnaire?.id);
+    setCurrentQuestionnaireData(assessmentData?.questionnaire);
   };
 
   for (let i = 1; i <= questionCount; i++) {
@@ -294,9 +427,29 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
           </div>
           <div className="flex gap-2 justify-end">
             <Form.Item>
-              <Button htmlType="submit">
-                Next <ArrowRightOutlined />
-              </Button>
+              <Tooltip
+                title={
+                  !isEditMode
+                    ? "Please fill in all the required information to proceed to the next step."
+                    : ""
+                }
+              >
+                <Button
+                  htmlType="submit"
+                  type="primary"
+                  loading={getQuestionnaireLoading}
+                >
+                  {isEditMode ? (
+                    <div className="flex items-center">
+                      <CheckOutlined className="mr-2" /> Save Changes
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      Next <ArrowRightOutlined className="ml-2" />
+                    </div>
+                  )}
+                </Button>
+              </Tooltip>
             </Form.Item>
           </div>
         </Form>
@@ -368,11 +521,18 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
                 <p className="m-2">
                   <strong>Self Question:</strong> {question?.self_question}
                 </p>
-                <hr />
-                <p className="m-2">
-                  <strong>Observer Question:</strong>{" "}
-                  {question?.observer_question}
-                </p>
+                {((isEditMode &&
+                  editAssessmentDataValue?.assessment_type === "360") ||
+                  (!isEditMode &&
+                    assessmentData?.assessment_type === "360")) && (
+                  <>
+                    <hr />
+                    <p className="m-2">
+                      <strong>Observer Question:</strong>{" "}
+                      {question?.observer_question}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           ))}
@@ -382,8 +542,20 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
             <ArrowLeftOutlined />
             Go Back to Step 1
           </Button>
-          <Button type="primary" onClick={handleSelectQuestionnaireNext}>
-            Next <ArrowRightOutlined />
+          <Button
+            type="primary"
+            onClick={handleSelectQuestionnaireNext}
+            loading={getQuestionnaireLoading}
+          >
+            {isEditMode ? (
+              <div className="flex items-center">
+                <CheckOutlined className="mr-2" /> Save Changes
+              </div>
+            ) : (
+              <div className="flex items-center">
+                Next <ArrowRightOutlined className="ml-2" />
+              </div>
+            )}
           </Button>
         </div>
       </div>
@@ -418,9 +590,10 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
         <Button
           type="primary"
           onClick={handleSubmission}
-          loading={createAssessmentLoading}
+          loading={createAssessmentLoading || getQuestionnaireLoading}
         >
-          <CheckOutlined /> Create Assessment
+          <CheckOutlined />
+          {isEditMode ? " Save Changes" : "Create Assessment"}
         </Button>
       </div>
     </>
@@ -434,20 +607,53 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
   }, [getQuestionnaireData]);
 
   useEffect(() => {
+    if (isEditMode) {
+      if (activeStep === 1) {
+        assessmentDetailsForm.setFieldsValue({
+          name: assessmentData?.name,
+          assessment_type: assessmentData?.assessment_type,
+          number_of_observers: assessmentData?.number_of_observers,
+          assessment_end_date: dayjs(assessmentData?.assessment_end_date),
+          rating_type: assessmentData?.rating_type,
+        });
+        setAssessmentTypeValue(assessmentData?.assessment_type);
+      } else if (activeStep === 2) {
+        setQuestionnaireValue(assessmentData?.questionnaire.id);
+        setCurrentQuestionnaireData(assessmentData?.questionnaire);
+      } else if (activeStep === 3) {
+      }
+    }
+  }, [activeStep, isEditMode]);
+
+  useEffect(() => {
     if (createAssessmentData) {
-      onBackNewAssessment();
+      navigate("/assessments");
       resetCreateAssessmentState();
     }
   }, [createAssessmentData]);
+
+  useEffect(() => {
+    if (editAssessmentData) {
+      navigate("/assessments");
+      resetEditAssessmentState();
+    }
+  }, [editAssessmentData]);
+
+  useEffect(() => {
+    if (isEditMode && !assessmentData) {
+      navigate("/assessments");
+    }
+  }, []);
+
   return (
     <>
       <Header>
         <div className="flex items-center">
           <CloseOutlined
             className="mr-4 cursor-pointer"
-            onClick={onBackNewAssessment}
+            onClick={() => navigate("/assessments")}
           />
-          <div>Create Assessment</div>
+          <div>{isEditMode ? "Edit Assessment" : "Create Assessment"}</div>
         </div>
       </Header>{" "}
       <div className="m-4 mt-0">
@@ -457,22 +663,30 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
               activeStep === 1
                 ? "bg-primary-4 border-b-2 border-primary-1"
                 : "bg-white border-b-2"
-            }`}
+            } ${isEditMode ? "cursor-pointer" : ""}`}
+            onClick={() =>
+              isEditMode && (activeStep === 2 || activeStep === 3)
+                ? handleGoBackToStep1()
+                : ""
+            }
           >
-            <Badge
-              style={{ color: `${activeStep === 1 ? "#7E39A4" : "black"}` }}
-              color={`${activeStep === 1 ? "#F9F0FF" : "#027a48"}`}
-              count={
-                activeStep === 1 ? (
-                  1
-                ) : (
-                  <CheckOutlined className="bg-success-bg rounded-xl p-1" />
-                )
-              }
-              className="mr-2"
-            ></Badge>
+            {!isEditMode && (
+              <Badge
+                style={{ color: `${activeStep === 1 ? "#7E39A4" : "black"}` }}
+                color={`${activeStep === 1 ? "#F9F0FF" : "#027a48"}`}
+                count={
+                  activeStep === 1 ? (
+                    1
+                  ) : (
+                    <CheckOutlined className="bg-success-bg rounded-xl p-1" />
+                  )
+                }
+                className="mr-2"
+              ></Badge>
+            )}
+
             <div>
-              <div className="text-text-4">Step 1</div>
+              {!isEditMode && <div className="text-text-4">Step 1</div>}
               <div className={`${activeStep === 1 ? "text-primary-2" : ""}`}>
                 Assessment Details
               </div>
@@ -483,22 +697,31 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
               activeStep === 2
                 ? "bg-primary-4 border-b-2 border-primary-1"
                 : "bg-white border-b-2"
-            }`}
+            }  ${isEditMode ? "cursor-pointer" : ""}`}
+            onClick={() =>
+              isEditMode && activeStep === 1
+                ? handleSkipToStep2From1()
+                : isEditMode && activeStep === 3
+                ? handleGoBackToStep2()
+                : ""
+            }
           >
-            <Badge
-              style={{ color: `${activeStep === 2 ? "#7E39A4" : "black"}` }}
-              color={`${activeStep === 2 ? "#F9F0FF" : "#f4f4f4"}`}
-              count={
-                activeStep === 3 ? (
-                  <CheckOutlined className="bg-success-bg rounded-xl p-1" />
-                ) : (
-                  2
-                )
-              }
-              className="mr-2"
-            ></Badge>
+            {!isEditMode && (
+              <Badge
+                style={{ color: `${activeStep === 2 ? "#7E39A4" : "black"}` }}
+                color={`${activeStep === 2 ? "#F9F0FF" : "#f4f4f4"}`}
+                count={
+                  activeStep === 3 ? (
+                    <CheckOutlined className="bg-success-bg rounded-xl p-1" />
+                  ) : (
+                    2
+                  )
+                }
+                className="mr-2"
+              ></Badge>
+            )}
             <div>
-              <div className="text-text-4">Step 2</div>
+              {!isEditMode && <div className="text-text-4">Step 2</div>}
               <div className={`${activeStep === 2 ? "text-primary-2" : ""}`}>
                 Select Questionnaire
               </div>
@@ -509,16 +732,25 @@ export const CreateAssessment = ({ onBackNewAssessment }) => {
               activeStep === 3
                 ? "bg-primary-4 border-b-2 border-primary-1"
                 : "bg-white border-b-2"
-            }`}
+            }  ${isEditMode ? "cursor-pointer" : ""}`}
+            onClick={() =>
+              isEditMode && activeStep === 1
+                ? handleSkipToStep3From1()
+                : isEditMode && activeStep === 2
+                ? handleSkipToStep3From2()
+                : ""
+            }
           >
-            <Badge
-              style={{ color: `${activeStep === 3 ? "#7E39A4" : "black"}` }}
-              color={`${activeStep === 3 ? "#F9F0FF" : "#f4f4f4"}`}
-              count={3}
-              className="mr-2"
-            ></Badge>
+            {!isEditMode && (
+              <Badge
+                style={{ color: `${activeStep === 3 ? "#7E39A4" : "black"}` }}
+                color={`${activeStep === 3 ? "#F9F0FF" : "#f4f4f4"}`}
+                count={3}
+                className="mr-2"
+              ></Badge>
+            )}
             <div>
-              <div className="text-text-4">Step 3</div>
+              {!isEditMode && <div className="text-text-4">Step 3</div>}
               <div className={`${activeStep === 3 ? "text-primary-2" : ""}`}>
                 Descriptive Questions
               </div>

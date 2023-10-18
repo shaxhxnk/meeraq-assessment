@@ -18,9 +18,9 @@ import { usePostApi } from "../../hooks/usePostApi";
 import { usePutApi } from "../../hooks/usePutApi";
 import { useDeleteApi } from "../../hooks/useDeleteApi";
 import { CloseCircleOutlined } from "@ant-design/icons";
-import { MoreOutlined } from "@ant-design/icons";
+import { MoreOutlined, FileTextOutlined } from "@ant-design/icons";
 import { formatTimestamp } from "../../utils/convertSlotToString";
-import { CreateAssessment } from "./CreateAssessment";
+import { useNavigate } from "react-router-dom";
 
 const categories = {
   draft: "Draft",
@@ -33,7 +33,9 @@ export const Assessments = () => {
   const [searchedData, setSearchedData] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("ongoing");
   const [filteredAssessments, setFilteredAssessments] = useState([]);
-  const [newAssessment, setNewAssessment] = useState(false);
+  const [deleteAssessmentModal, setDeleteAssessmentModal] = useState(false);
+  const [currentAssessmentData, setCurrentAssessmentData] = useState(null);
+  const navigate = useNavigate();
 
   const {
     data: getAssessmentData,
@@ -42,6 +44,16 @@ export const Assessments = () => {
     getData: getAssessment,
   } = useGetApi(
     `${process.env.REACT_APP_BASE_URL}/assessmentApi/get-assessments/`
+  );
+
+  const {
+    data: deleteAssessmentData,
+    isLoading: deleteAssessmentLoading,
+    error: deleteAssessmentError,
+    deleteData: deleteAssessment,
+    resetState: resetDeleteAssessmentState,
+  } = useDeleteApi(
+    `${process.env.REACT_APP_BASE_URL}/assessmentApi/delete-assessment/`
   );
 
   const handleSearch = (searchText) => {
@@ -61,17 +73,18 @@ export const Assessments = () => {
     setSearchedData(null);
   };
 
-  const handleAddNewAssessment = () => {
-    setNewAssessment(true);
+  const handleEdit = (assessment) => {
+    navigate("/edit-assessment", { state: { assessment } })
   };
-  const handleEdit = () => {};
 
-  const handleDelete = () => {};
-
-  const onBackNewAssessment = () => {
-    setNewAssessment(false);
-    getAssessment();
+  const handleDelete = (assessment) => {
+    setCurrentAssessmentData(assessment);
+    setDeleteAssessmentModal(true)
   };
+  const handleDeleteConfirm = () => {
+    deleteAssessment(currentAssessmentData);
+  };
+
   useEffect(() => {
     const filteredAssessments = getAssessmentData?.filter((assessment) => {
       return assessment.status === selectedCategory;
@@ -85,6 +98,23 @@ export const Assessments = () => {
       title: "Assessment Name",
       dataIndex: "name",
       key: "name",
+      render: (name, assessment) => {
+        return (
+          <div className="flex items-center space-x-2">
+            <div className="">
+              <FileTextOutlined />
+            </div>
+            <div
+              onClick={() =>
+                navigate("/view-assessment", { state: { assessment } })
+              }
+              className="cursor-pointer hover:text-primary-1 text-primary-2"
+            >
+              {name}
+            </div>
+          </div>
+        );
+      },
     },
     {
       title: "Assessment Type",
@@ -137,20 +167,27 @@ export const Assessments = () => {
       },
     },
   ];
+
+  useEffect(() => {
+    if (deleteAssessmentData) {
+      setDeleteAssessmentModal(false);
+      getAssessment();
+      resetDeleteAssessmentState();
+    }
+  }, [deleteAssessmentData]);
+
   if (getAssessmentLoading) {
     return <Spin />;
-  } else if (newAssessment) {
-    return <CreateAssessment onBackNewAssessment={onBackNewAssessment} />;
   } else {
     return (
       <>
         <Header>
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             All Assessment
             <div className="text-right">
               <Button
                 className="mr-2"
-                onClick={() => handleAddNewAssessment()}
+                onClick={() => navigate("/create-assessment")}
                 type="primary"
               >
                 <AddRounded />
@@ -206,6 +243,17 @@ export const Assessments = () => {
             dataSource={searchedData || filteredAssessments}
             pagination={{ pageSize: 10 }}
           />
+          <Modal
+            title="Delete Assessment"
+            open={deleteAssessmentModal}
+            onOk={handleDeleteConfirm}
+            onCancel={() => setDeleteAssessmentModal(false)}
+            okText="Yes"
+            confirmLoading={deleteAssessmentLoading}
+          >
+            Are you sure you want to delete{" "}
+            <strong>{currentAssessmentData?.name}</strong> Assessment ?
+          </Modal>
         </div>
       </>
     );

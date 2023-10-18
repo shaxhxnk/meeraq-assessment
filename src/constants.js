@@ -1,5 +1,8 @@
 const PMO_ASSESSMENT_ARR = [
   "/assessments",
+  "/view-assessment",
+  "/create-assessment",
+  "/edit-assessment",
   "/competencies",
   "/questions",
   "/questionnaire",

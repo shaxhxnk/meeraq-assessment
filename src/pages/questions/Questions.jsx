@@ -220,7 +220,7 @@ export const Questions = () => {
     return (
       <>
         <Header>
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             All Questions
             <div className="text-right">
               <Button

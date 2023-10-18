@@ -19,6 +19,9 @@ import { NotificationPage } from "./pages/notification/NotificationPage";
 import { Competencies } from "./pages/competencies/Competencies";
 import { Questions } from "./pages/questions/Questions";
 import { Questionnaire } from "./pages/questionnaire/Questionnaire";
+import { ViewAssessment } from "./pages/assessments/ViewAssessment";
+import { CreateAssessment } from "./pages/assessments/CreateAssessment";
+
 
 function App() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -45,6 +48,9 @@ function App() {
   const PMO_ASSESSMENT_ROUTES = (
     <>
       <Route path="/assessments" element={<Assessments />} />
+      <Route path="/view-assessment" element={<ViewAssessment />} />
+      <Route path="/create-assessment" element={<CreateAssessment />} />
+      <Route path="/edit-assessment" element={<CreateAssessment />} />
       <Route path="/competencies" element={<Competencies />} />
       <Route path="/questions" element={<Questions />} />
       <Route path="/questionnaire" element={<Questionnaire />} />

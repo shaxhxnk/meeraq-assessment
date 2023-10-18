@@ -179,7 +179,7 @@ export const Competencies = () => {
     return (
       <>
         <Header>
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             All Competencies
             <div className="text-right">
               <Button

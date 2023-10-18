@@ -192,7 +192,7 @@ export const Questionnaire = () => {
   const questionnairesList = (
     <>
       <Header>
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center">
           All Questionnaires
           <div className="text-right">
             <Button
