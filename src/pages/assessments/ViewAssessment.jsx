@@ -12,8 +12,9 @@ import {
   Spin,
   Radio,
   DatePicker,
+  Tooltip,
 } from "antd";
-import { AddRounded, SearchOutlined } from "@mui/icons-material";
+import { AddRounded, EditOutlined } from "@mui/icons-material";
 import { useGetApi } from "../../hooks/useGetApi";
 import { usePostApi } from "../../hooks/usePostApi";
 import { usePutApi } from "../../hooks/usePutApi";
@@ -25,6 +26,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeftOutlined, CheckOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
+import moment from "moment";
 
 const categories = {
   questionnaire: "Questionnaire",
@@ -32,15 +34,96 @@ const categories = {
   results: "Results",
 };
 
+function disabledDate(current) {
+  return current && current < moment().endOf("day");
+}
+
 export const ViewAssessment = () => {
   const location = useLocation();
   const [assessmentData, setAssessmentData] = useState(
     location?.state?.assessment
   );
-  console.log(assessmentData);
+
   const [selectedCategory, setSelectedCategory] = useState("questionnaire");
+  const [addParticipantModal, setAddParticipantModal] = useState(false);
+  const [form] = Form.useForm();
+  const [participantFields, setParticipantFields] = useState([]);
+  const [observerFields, setObserverFields] = useState([]);
+  const [editAssessmentEndDateEnabled, setEditAssessmentEndDateEnabled] =
+    useState(false);
+  const [assessmentEndDateFieldData, setAssessmentEndDateFieldData] = useState(
+    dayjs(assessmentData?.assessment_end_date)
+  );
+  const {
+    data: addParticipantData,
+    isLoading: addParticipantLoading,
+    error: addParticipantError,
+    putData: addParticipant,
+    resetState: resetAddParticipantState,
+  } = usePutApi(
+    `${process.env.REACT_APP_BASE_URL}/assessmentApi/add-participant-observer-to-assessment/`
+  );
+
+  const {
+    data: editStatusOrEndDataData,
+    isLoading: editStatusOrEndDataLoading,
+    error: editStatusOrEndDataError,
+    putData: editStatusOrEndData,
+    resetState: resetEditStatusOrEndDataState,
+  } = usePutApi(
+    `${process.env.REACT_APP_BASE_URL}/assessmentApi/assessment-status-end-data-change/`
+  );
+
+  const addParticipantField = () => {
+    setParticipantFields([...participantFields, {}]);
+  };
+
+  const addObserverField = () => {
+    setObserverFields([...observerFields, {}]);
+  };
+
   const navigate = useNavigate();
 
+  const handleAddParticipantConfirm = async () => {
+    const values = await form.validateFields();
+
+    const participants = values.participants;
+
+    const observers = [];
+    const observerskey = Object.keys(values).filter((key) =>
+      key.startsWith("observers[")
+    );
+    for (let i = 0; i < observerskey.length / 2; i++) {
+      const observerName = values[`observers[${i}].observerName`];
+      const observerEmail = values[`observers[${i}].observerEmail`];
+
+      observers.push({
+        observerName,
+        observerEmail,
+      });
+    }
+
+    addParticipant({
+      assessment_id: assessmentData.id,
+      participants: participants,
+      observers: observers,
+    });
+  };
+
+  const handleStatusChange = (status) => {
+    editStatusOrEndData({
+      id: assessmentData.id,
+      status: status,
+      assessment_end_date: assessmentData.assessment_end_date,
+    });
+  };
+  const handleEditAssessmentEndDate = () => {
+    editStatusOrEndData({
+      id: assessmentData.id,
+      status: assessmentData.status,
+      assessment_end_date: assessmentEndDateFieldData.format("YYYY-MM-DD"),
+    });
+  };
   const questionnaireTab = (
     <div className="m-4 mt-8">
       <p className="text-lg font-Inter font-semibold">
@@ -81,7 +164,10 @@ export const ViewAssessment = () => {
           <div className="m-8 mt-4">
             <ul className=" list-decimal ">
               {assessmentData?.descriptive_questions?.map((question, index) => (
-                <li className="mb-1" key={index}> {question.trim()}</li>
+                <li className="mb-1" key={index}>
+                  {" "}
+                  {question.trim()}
+                </li>
               ))}
             </ul>
           </div>
@@ -107,6 +193,26 @@ export const ViewAssessment = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (addParticipantData) {
+      setAddParticipantModal(false);
+      setAssessmentData(addParticipantData?.assessment_data);
+      form.resetFields();
+    }
+  }, [addParticipantData]);
+
+  useEffect(() => {
+    if (editStatusOrEndDataData) {
+      setAssessmentData(editStatusOrEndDataData?.assessment_data);
+      setAssessmentEndDateFieldData(
+        dayjs(editStatusOrEndDataData?.assessment_data?.assessment_end_date)
+      );
+      setEditAssessmentEndDateEnabled(false);
+      resetEditStatusOrEndDataState();
+    }
+  }, [editStatusOrEndDataData]);
+
+  const statusOptions = ["ongoing", "draft", "completed"];
   return (
     <>
       <Header>
@@ -117,19 +223,33 @@ export const ViewAssessment = () => {
               onClick={() => navigate("/assessments")}
             />
             <div className="text-lg">{assessmentData?.name}</div>
-            <div
-              className={`capitalize ml-4 px-3 rounded-lg ${
-                assessmentData?.status === "ongoing"
-                  ? "bg-success-bg text-success "
-                  : assessmentData?.status === "draft"
-                  ? "bg-gray-200 text-gray-600"
-                  : assessmentData?.status === "completed"
-                  ? "bg-text-5 text-text-4"
-                  : ""
-              }`}
+            <Dropdown
+              overlay={
+                <Menu onClick={({ key }) => handleStatusChange(key)}>
+                  {statusOptions
+                    .filter((status) => status !== assessmentData?.status)
+                    .map((status) => (
+                      <Menu.Item key={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </Menu.Item>
+                    ))}
+                </Menu>
+              }
             >
-              {assessmentData?.status}
-            </div>
+              <div
+                className={`capitalize ml-4 px-3 rounded-lg cursor-pointer ${
+                  assessmentData?.status === "ongoing"
+                    ? "bg-success-bg text-success "
+                    : assessmentData?.status === "draft"
+                    ? "bg-gray-200 text-gray-600"
+                    : assessmentData?.status === "completed"
+                    ? "bg-gray-200 text-gray-600"
+                    : ""
+                }`}
+              >
+                {assessmentData?.status}
+              </div>
+            </Dropdown>
             <div
               className={`capitalize ml-4 px-3 rounded-lg bg-primary-4 text-primary-1 py-0.5 flex items-center`}
             >
@@ -141,12 +261,18 @@ export const ViewAssessment = () => {
             <div className="text-base font-normal">Assessment End Date</div>
             <DatePicker
               format={"DD-MM-YYYY"}
-              disabled
-              defaultValue={dayjs(assessmentData?.assessment_end_date)}
+              disabled={!editAssessmentEndDateEnabled}
+              value={dayjs(assessmentData?.assessment_end_date)}
             />
+            <Tooltip title={"Click to edit assessment end date."}>
+              <EditOutlined
+                className="mr-1 cursor-pointer"
+                onClick={() => setEditAssessmentEndDateEnabled(true)}
+              />
+            </Tooltip>
             <Button
               className=" mr-2"
-              //   onClick={() => handleEditFromView(currentQuestionnaireData)}
+              onClick={() => setAddParticipantModal(true)}
             >
               <AddRounded /> Add Participants
             </Button>
@@ -184,6 +310,130 @@ export const ViewAssessment = () => {
         ) : (
           <></>
         )}
+
+        <Modal
+          title="Add Participant"
+          open={addParticipantModal}
+          onOk={handleAddParticipantConfirm}
+          onCancel={() => setAddParticipantModal(false)}
+          okText="Confirm"
+          confirmLoading={addParticipantLoading}
+        >
+          <div className="overflow-y-auto custom-scrollbar h-[450px] p-4">
+            <Form form={form}>
+              <Form.List name="participants" initialValue={[""]}>
+                {(fields, { add, remove }) => (
+                  <div className="">
+                    <p className="font-Inter font-semibold text-xl">
+                      Participant
+                    </p>
+                    {fields.map(({ key, name, fieldKey, ...restField }) => (
+                      <div key={key}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "participantName"]}
+                          fieldKey={[fieldKey, "participantName"]}
+                          label={`Name of Participant`}
+                          rules={[
+                            {
+                              required: true,
+                              message:
+                                "Please enter a name for the participant!",
+                            },
+                          ]}
+                          labelCol={{ span: 24 }}
+                        >
+                          <Input />
+                        </Form.Item>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "participantEmail"]}
+                          fieldKey={[fieldKey, "participantEmail"]}
+                          label={`Email Id of Participant `}
+                          rules={[
+                            {
+                              type: "email",
+                              message: "Invalid email format",
+                            },
+                            {
+                              required: true,
+                              message:
+                                "Please enter an email address for the participant!",
+                            },
+                          ]}
+                          labelCol={{ span: 24 }}
+                        >
+                          <Input />
+                        </Form.Item>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Form.List>
+              {assessmentData?.assessment_type === "360" && (
+                <p className="font-Inter font-semibold text-xl">Observer</p>
+              )}
+              {Array.from({ length: assessmentData?.number_of_observers }).map(
+                (_, index) => (
+                  <div key={index}>
+                    <Form.Item
+                      name={`observers[${index}].observerName`}
+                      label={`Name for Observer ${index + 1}`}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter a name for the Observer!",
+                        },
+                      ]}
+                      labelCol={{ span: 24 }}
+                    >
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name={`observers[${index}].observerEmail`}
+                      label={`Email Id for Observer ${index + 1}`}
+                      rules={[
+                        {
+                          type: "email",
+                          message: "Invalid email format",
+                        },
+                        {
+                          required: true,
+                          message:
+                            "Please enter an email address for the Observer!",
+                        },
+                      ]}
+                      labelCol={{ span: 24 }}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </div>
+                )
+              )}
+            </Form>
+          </div>
+        </Modal>
+
+        <Modal
+          title="Edit Assessment End Date"
+          open={editAssessmentEndDateEnabled}
+          onOk={handleEditAssessmentEndDate}
+          onCancel={() => setEditAssessmentEndDateEnabled(false)}
+          okText="Confirm"
+          confirmLoading={editStatusOrEndDataLoading}
+        >
+          <label className="text-sm font-medium mr-2">
+            Enter Assessment End Date:
+          </label>
+          <DatePicker
+            format={"DD-MM-YYYY"}
+            value={assessmentEndDateFieldData}
+            onChange={setAssessmentEndDateFieldData}
+            placeholder="Select Assessment End Date"
+            disabledDate={disabledDate}
+            className="m-2"
+          />
+        </Modal>
       </div>
     </>
   );

@@ -166,7 +166,8 @@ export const CreateAssessment = () => {
         editAssessment({
           name: name,
           assessment_type: assessment_type,
-          number_of_observers: number_of_observers,
+          number_of_observers:
+            assessment_type === "self" ? 0 : number_of_observers,
           assessment_end_date: assessment_end_date,
           rating_type: rating_type,
           questionnaire: assessmentData?.questionnaire?.id,
@@ -177,7 +178,8 @@ export const CreateAssessment = () => {
         setAssessmentData({
           name,
           assessment_type,
-          number_of_observers,
+          number_of_observers:
+            assessment_type === "self" ? 0 : number_of_observers,
           assessment_end_date,
           rating_type,
         });
@@ -349,7 +351,12 @@ export const CreateAssessment = () => {
                 name="name"
                 labelCol={{ span: 24 }}
                 label="Enter Assessment Name"
-                required
+                rules={[
+                  {
+                    required: true,
+                    message: "Please Enter Assessment Name.",
+                  },
+                ]}
                 className="mr-4"
               >
                 <Input maxLength={101} placeholder="Enter Assessment Name" />
@@ -360,7 +367,12 @@ export const CreateAssessment = () => {
                 name="assessment_type"
                 labelCol={{ span: 24 }}
                 label="Add Assessment Type"
-                required
+                rules={[
+                  {
+                    required: true,
+                    message: "Please Enter Assessment Type.",
+                  },
+                ]}
               >
                 <Select
                   placeholder="Select Assessment Type"
@@ -380,7 +392,12 @@ export const CreateAssessment = () => {
                 name="number_of_observers"
                 labelCol={{ span: 24 }}
                 label="Number of Observers"
-                required
+                rules={[
+                  {
+                    required: assessmentTypeValue === "self" ? false : true,
+                    message: "Please Enter Number of Observers.",
+                  },
+                ]}
                 className="mr-4"
               >
                 <Select
@@ -400,7 +417,12 @@ export const CreateAssessment = () => {
                 name="assessment_end_date"
                 labelCol={{ span: 24 }}
                 label="Assessment End Date"
-                required
+                rules={[
+                  {
+                    required: true,
+                    message: "Please Enter Assessment End Date.",
+                  },
+                ]}
               >
                 <DatePicker
                   format={"DD-MM-YYYY"}
@@ -416,7 +438,12 @@ export const CreateAssessment = () => {
                 name="rating_type"
                 labelCol={{ span: 24 }}
                 label="Assessment Rating Type"
-                required
+                rules={[
+                  {
+                    required: true,
+                    message: "Please Enter Assessment Rating Type.",
+                  },
+                ]}
               >
                 <Select placeholder="Select Rating Type">
                   <Select.Option value="1-5">1-5</Select.Option>
@@ -479,7 +506,7 @@ export const CreateAssessment = () => {
             className="max-w-[250px] lg:ml-3"
           />
         </div>
-        <div className="overflow-y-auto custom-scrollbar lg:h-[450px] p-6">
+        <div className="overflow-y-auto custom-scrollbar h-[450px] p-6">
           <Radio.Group
             onChange={handleOnChangeQuestionnaireRadio}
             value={questionnaireValue}
