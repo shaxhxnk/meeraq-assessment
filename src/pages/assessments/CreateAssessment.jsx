@@ -530,7 +530,7 @@ export const CreateAssessment = () => {
       <div className="w-3/4">
         <div className="p-4 w-full bg-bg-1 border-b  border-gray-300 rounded-tr-lg">
           <p className="text-xl font-semibold pl-4">
-            Performance Evaluation Questionnaire
+            {currentQuestionnaireData?.name}
           </p>
         </div>
         <div className="m-4 lg:h-[450px] overflow-y-auto custom-scrollbar">

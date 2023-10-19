@@ -3,7 +3,7 @@ import { Header } from "../../components/header/Header";
 import { formatTimestamp } from "../../utils/convertSlotToString";
 import { FileTextOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Input, Modal, Table } from "antd";
+import { Button, Input, Modal, Table, Tag } from "antd";
 import { CloseCircleOutlined } from "@ant-design/icons";
 import { SearchOutlined } from "@mui/icons-material";
 import { useGetApi } from "../../hooks/useGetApi";
@@ -17,7 +17,6 @@ export const SharedAssessments = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useSelector((state) => state.auth);
-
 
   const {
     data: getAssessmentData,
@@ -46,7 +45,7 @@ export const SharedAssessments = () => {
   };
 
   const handleStartAssessmentConfirm = () => {
-    navigate("/meeraq/assessment",{ state: { currentAssessmentData } });
+    navigate("/meeraq/assessment", { state: { currentAssessmentData } });
   };
 
   const columns = [
@@ -91,14 +90,19 @@ export const SharedAssessments = () => {
       render: (_, assessment) => {
         return (
           <>
-            <Button
-              onClick={() => {
-                setStartModalVisible(true);
-                setCurrentAssessmentData(assessment);
-              }}
-            >
-              Start
-            </Button>
+            {assessment.assessment_answered === true ? (
+              <Tag color="green">Answered</Tag>
+            ) : (
+              <Button
+                onClick={() => {
+                  setStartModalVisible(true);
+                  setCurrentAssessmentData(assessment);
+                }}
+                disabled={assessment.assessment_answered === true}
+              >
+                Start
+              </Button>
+            )}
           </>
         );
       },

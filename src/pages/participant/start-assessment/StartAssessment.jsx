@@ -9,6 +9,8 @@ import {
 import { Badge, Button, Modal, Progress, Spin } from "antd";
 import MeeraqLogo from "../../../assets/meeraq_logo_color.png";
 import { useGetApi } from "../../../hooks/useGetApi";
+import { usePostApi } from "../../../hooks/usePostApi";
+import { useSelector } from "react-redux";
 
 export const StartAssessment = () => {
   const location = useLocation();
@@ -26,7 +28,7 @@ export const StartAssessment = () => {
   const [currentAnswer, setCurrentAnswer] = useState(null);
   const [exitModalVisible, setExitModalVisible] = useState(false);
   const [submitModalVisible, setSubmitModalVisible] = useState(false);
-
+  const { user } = useSelector((state) => state.auth);
   const {
     data: getQuestionsData,
     isLoading: getQuestionsLoading,
@@ -34,6 +36,15 @@ export const StartAssessment = () => {
     getData: getQuestions,
   } = useGetApi(
     `${process.env.REACT_APP_BASE_URL}/assessmentApi/questions-for-assessment/${assessmentData?.id}`
+  );
+
+  const {
+    data: createResponseData,
+    isLoading: createResponseLoading,
+    postData: createResponse,
+    resetState: resetCreateResponseState,
+  } = usePostApi(
+    `${process.env.REACT_APP_BASE_URL}/assessmentApi/create-response/`
   );
 
   useEffect(() => {
@@ -71,6 +82,10 @@ export const StartAssessment = () => {
           setCurrentCompetency(competencies[currentCompetencyIndex + 1]);
           setActiveQuestion(0);
         } else {
+          const element = document.getElementById("container");
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          }
           setSubmitModalVisible(true);
         }
       }
@@ -122,7 +137,13 @@ export const StartAssessment = () => {
     }
   };
 
-  const handleSubmitConfirm = () => {};
+  const handleSubmitConfirm = () => {
+    createResponse({
+      assessment_id: assessmentData?.id,
+      participant_email: user?.email,
+      response: answeredQuestions,
+    });
+  };
 
   useEffect(() => {
     if (getQuestionsData && currentCompetency && answeredQuestions) {
@@ -141,7 +162,14 @@ export const StartAssessment = () => {
     const element = document.getElementById("container");
     element.requestFullscreen();
   }, []);
-  
+
+  useEffect(() => {
+    if (createResponseData) {
+      navigate("/participant/assessments");
+      setSubmitModalVisible(false);
+    }
+  }, [createResponseData]);
+
   if (getQuestionsLoading) {
     return (
       <div>
@@ -352,7 +380,7 @@ export const StartAssessment = () => {
             onOk={handleSubmitConfirm}
             onCancel={() => setSubmitModalVisible(false)}
             okText="Submit"
-            // confirmLoading=
+            confirmLoading={createResponseLoading}
           >
             Are you sure you want to submit the assessment?
             <strong>
