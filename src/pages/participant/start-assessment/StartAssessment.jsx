@@ -306,11 +306,11 @@ export const StartAssessment = () => {
                             : "border-success hover:bg-green-100"
                         } ${
                           currentAnswer === number && number <= 3
-                            ? "bg-red-100"
+                            ? "bg-error text-white"
                             : currentAnswer === number && number <= 7
-                            ? "bg-amber-100"
+                            ? "bg-rating-1 text-white"
                             : currentAnswer === number && number <= 10
-                            ? "bg-green-100"
+                            ? "bg-success text-white"
                             : ""
                         }`}
                         onClick={() => handleResponse(number)}
@@ -330,11 +330,11 @@ export const StartAssessment = () => {
                             : "border-success hover:bg-green-100"
                         } ${
                           currentAnswer === number && number <= 2
-                            ? "bg-red-100"
+                            ? "bg-error text-white"
                             : currentAnswer === number && number <= 3
-                            ? "bg-amber-100"
+                            ? "bg-rating-1 text-white"
                             : currentAnswer === number && number <= 5
-                            ? "bg-green-100"
+                            ? "bg-success text-white"
                             : ""
                         }`}
                         onClick={() => handleResponse(number)}
