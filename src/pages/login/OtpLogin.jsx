@@ -7,6 +7,7 @@ import { loginWithOtp } from "../../redux/services/authService";
 import { validateEmailOnBlur } from "../../utils/validation";
 import { VALIDATE_TRIGGERS } from "../../utils/constants";
 import MeeraqLogo from "../../assets/meeraq_logo_color.png";
+import LoginPageSvg from "../../assets/loginPageSvg.svg";
 
 export const OtpLogin = ({ setIsLoggingWithOtp }) => {
   const { isLoading, isAuthenticated, error, csrf } = useSelector(
@@ -63,6 +64,7 @@ export const OtpLogin = ({ setIsLoggingWithOtp }) => {
         <Input
           prefix={<UserOutlined className="site-form-item-icon" />}
           placeholder="Email"
+          style={{ width: "300px" }}
         />
       </Form.Item>
       <Form.Item>
@@ -70,7 +72,8 @@ export const OtpLogin = ({ setIsLoggingWithOtp }) => {
           type="primary"
           htmlType="submit"
           loading={generateOtpLoading}
-          className="bg-sky-500"
+          className="bg-sky-500 mt-4"
+          style={{ width: "300px" }}
         >
           Generate OTP
         </Button>
@@ -79,6 +82,7 @@ export const OtpLogin = ({ setIsLoggingWithOtp }) => {
       <Button
         className="mt-4"
         onClick={() => setIsLoggingWithOtp((prev) => !prev)}
+        style={{ width: "300px" }}
       >
         Login With Password
       </Button>
@@ -106,6 +110,8 @@ export const OtpLogin = ({ setIsLoggingWithOtp }) => {
         <Input
           prefix={<UserOutlined className="site-form-item-icon" />}
           placeholder="OTP"
+          className="mt-8"
+          style={{ width: "300px" }}
         />
       </Form.Item>
       <Form.Item>
@@ -113,7 +119,8 @@ export const OtpLogin = ({ setIsLoggingWithOtp }) => {
           type="primary"
           htmlType="submit"
           loading={generateOtpLoading}
-          className="bg-sky-500"
+          className="bg-sky-500 mt-8"
+          style={{ width: "300px" }}
         >
           Login
         </Button>
@@ -122,29 +129,52 @@ export const OtpLogin = ({ setIsLoggingWithOtp }) => {
   );
 
   return (
-    <div>
-      <div className="bg-gray-100 sm:px-6 lg:px-8">
-        {/* <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className=" text-center text-3xl font-extrabold text-gray-900">
-            OTP Login
-          </h2>
-        </div> */}
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <div className="flex justify-center">
-              <img
-                className="w-[40%] mb-[4rem] h-auto"
-                src={MeeraqLogo}
-                alt="Meeraq logo"
-              />
-            </div>
+    <div className="flex flex-col lg:flex-row h-screen">
+      {/* Left Half */}
+      <div
+        className="lg:w-1/2 h-full"
+        style={{
+          background: "linear-gradient(45deg, #480025 0%, #031F44 100%)",
+        }}
+      >
+        <div className="flex items-center justify-center h-screen mr-8">
+        <img src={LoginPageSvg} alt="My SVG" />
+        </div>
+      </div>
 
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-              <h2 className=" text-center text-3xl font-extrabold text-gray-900 mb-[2rem]">
-                OTP Login
-              </h2>
+      {/* Right Half */}
+      <div className="lg:w-1/2 h-1/2 lg:h-full">
+        <div className="flex p-0 lg:pl-32 lg:pr-32 pt-10 flex-col justify-center items-center flex-1 self-stretch">
+          <div className="flex flex-col !w-[360px] items-center">
+            <div className="!w-[174px] !mb-[22px] !mt-[100px] justify-center items-center inline-flex">
+              <img className="" src={MeeraqLogo} alt="img" />
             </div>
-            {generateOtpData ? validateOtpForm : generateOtpForm}
+            <div
+              className="!mb-[22px] "
+              style={{
+                color: "var(--text-1, #1D1D1D)",
+                fontFamily: "Inter",
+                fontSize: "32px",
+                fontStyle: "normal",
+                fontWeight: 600,
+                lineHeight: "150%",
+                letterSpacing: "0.08px",
+              }}
+            >
+              {" "}
+              OTP Login
+            </div>
+            <div className="pl-4 lg:pl-0">
+              {generateOtpData ? validateOtpForm : generateOtpForm}
+            </div>
+          </div>
+        </div>
+        <div className="flex !pt-[230px] pl-2 pr-2 justify-between items-end self-stretch">
+          <div className="text-text-4 font-inter text-sm font-normal">
+            © 2023 Meeraq.
+          </div>
+          <div className="text-text-4 font-inter text-base font-normal">
+            pmocoaching@meeraq.com
           </div>
         </div>
       </div>

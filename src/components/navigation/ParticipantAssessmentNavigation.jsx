@@ -21,7 +21,8 @@ function getItem(label, key, icon, children) {
 
 
 const keysInitials = [
-  "assessments",
+  "participant/assessments",
+  "participant/results",
 ];
 
 
@@ -54,25 +55,16 @@ const ParticipantAssessmentNavigation = () => {
   
   const items = [
     getItem(
-      "Assessments",
-      "assessments",
+      "Shared Assessments",
+      "participant/assessments",
       // <DashboardOutlinedIcon className="!text-[24px]" />
     ),
     getItem(
-      "Competencies",
-      "competencies",
+      "Result",
+      "participant/results",
       // <DashboardOutlinedIcon className="!text-[24px]" />
     ),
-    getItem(
-      "Questions",
-      "questions",
-      // <DashboardOutlinedIcon className="!text-[24px]" />
-    ),
-    getItem(
-      "Questionnaire",
-      "questionnaire",
-      // <DashboardOutlinedIcon className="!text-[24px]" />
-    ),
+  
   ];
  
 

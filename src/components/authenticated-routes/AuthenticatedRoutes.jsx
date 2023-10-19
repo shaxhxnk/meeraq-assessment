@@ -16,6 +16,9 @@ const AuthenticatedRoutes = () => {
     if (user.user.type === "pmo" && !isRouteAllowed) {
       isRouteAllowed = pathname.startsWith("/assessments");
     }
+    if (user.user.type === "learner" && !isRouteAllowed) {
+      isRouteAllowed = pathname.startsWith("/participant/assessments");
+    }
   }
 
   return isAuthenticated ? (

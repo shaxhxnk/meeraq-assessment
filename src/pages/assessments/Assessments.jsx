@@ -121,7 +121,7 @@ export const Assessments = () => {
       dataIndex: "assessment_type",
       key: "assessment_type",
       render: (assessment_type) => {
-        return <>{assessment_type} Assessment</>;
+        return <div className="capilatize">{assessment_type} Assessment</div>;
       },
     },
 

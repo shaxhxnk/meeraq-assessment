@@ -21,6 +21,9 @@ import { Questions } from "./pages/questions/Questions";
 import { Questionnaire } from "./pages/questionnaire/Questionnaire";
 import { ViewAssessment } from "./pages/assessments/ViewAssessment";
 import { CreateAssessment } from "./pages/assessments/CreateAssessment";
+import { SharedAssessments } from "./pages/participant/SharedAssessments";
+import { Results } from "./pages/participant/Results";
+import { StartAssessment } from "./pages/participant/start-assessment/StartAssessment";
 
 
 function App() {
@@ -57,12 +60,18 @@ function App() {
     </>
   );
 
-  const PARTICIPANT_ASSESSMENT_ROUTES = <></>;
+  const PARTICIPANT_ASSESSMENT_ROUTES = (
+    <>
+      <Route path="/participant/assessments" element={<SharedAssessments />} />
+      <Route path="/participant/results" element={<Results />} />
+    </>
+  );
+
 
   return (
     <div className="App">
       <Layout>
-        {isAuthenticated && <Sidebar menu={custom_menu} />}
+        {isAuthenticated && pathname !=="/meeraq/assessment" && <Sidebar menu={custom_menu} />}
         <Layout.Content className="content">
           {pathname !== "/" && <Navbar menu={custom_menu} />}
           <div
@@ -87,6 +96,10 @@ function App() {
               <Route
                 path="/reset-password/:token"
                 element={<ResetPassword />}
+              />
+              <Route
+                path="/meeraq/assessment"
+                element={<StartAssessment />}
               />
               <Route element={<AuthenticatedRoutes />}>
                 <Route path="/notifications" element={<NotificationPage />} />
