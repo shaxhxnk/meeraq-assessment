@@ -24,6 +24,8 @@ import { CreateAssessment } from "./pages/assessments/CreateAssessment";
 import { SharedAssessments } from "./pages/participant/SharedAssessments";
 import { Results } from "./pages/participant/Results";
 import { StartAssessment } from "./pages/participant/start-assessment/StartAssessment";
+import { ObserverLogin } from "./pages/observer/ObserverLogin";
+import { ObserversAssessment } from "./pages/observer/ObserversAssessment";
 
 
 function App() {
@@ -96,6 +98,14 @@ function App() {
               <Route
                 path="/reset-password/:token"
                 element={<ResetPassword />}
+              />
+              <Route
+                path="/observer-detail"
+                element={<ObserverLogin />}
+              />
+              <Route
+                path="/observer-assessment"
+                element={<ObserversAssessment />}
               />
               <Route
                 path="/meeraq/assessment"
