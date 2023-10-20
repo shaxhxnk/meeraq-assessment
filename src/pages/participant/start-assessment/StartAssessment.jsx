@@ -306,7 +306,7 @@ export const StartAssessment = () => {
                             : "border-success hover:bg-green-100"
                         } ${
                           currentAnswer === number && number <= 3
-                            ? "bg-error text-white"
+                            ? "bg-red-600 text-white"
                             : currentAnswer === number && number <= 7
                             ? "bg-rating-1 text-white"
                             : currentAnswer === number && number <= 10
@@ -330,7 +330,7 @@ export const StartAssessment = () => {
                             : "border-success hover:bg-green-100"
                         } ${
                           currentAnswer === number && number <= 2
-                            ? "bg-error text-white"
+                            ? "bg-red-600 text-white"
                             : currentAnswer === number && number <= 3
                             ? "bg-rating-1 text-white"
                             : currentAnswer === number && number <= 5

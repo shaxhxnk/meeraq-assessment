@@ -13,8 +13,11 @@ import {
   Radio,
   DatePicker,
   Tooltip,
+  Space,
+  Select,
+  Progress,
 } from "antd";
-import { AddRounded, EditOutlined } from "@mui/icons-material";
+import { AddRounded, EditOutlined, SearchOutlined } from "@mui/icons-material";
 import { useGetApi } from "../../hooks/useGetApi";
 import { usePostApi } from "../../hooks/usePostApi";
 import { usePutApi } from "../../hooks/usePutApi";
@@ -54,6 +57,7 @@ export const ViewAssessment = () => {
   const [assessmentEndDateFieldData, setAssessmentEndDateFieldData] = useState(
     dayjs(assessmentData?.assessment_end_date)
   );
+
   const {
     data: addParticipantData,
     isLoading: addParticipantLoading,
@@ -90,21 +94,21 @@ export const ViewAssessment = () => {
     const participants = values.participants;
 
     const observers = [];
-    const observerskey = Object.keys(values).filter((key) =>
-      key.startsWith("observers[")
-    );
-    for (let i = 0; i < observerskey.length / 2; i++) {
+  
+    for (let i = 0; i < assessmentData?.number_of_observers; i++) {
       const observerName = values[`observers[${i}].observerName`];
       const observerEmail = values[`observers[${i}].observerEmail`];
+      const observerType = values[`observers[${i}].observerType`];
 
       observers.push({
         observerName,
         observerEmail,
+        observerType,
       });
     }
-
+    
     addParticipant({
-      assessment_id: assessmentData.id,
+      assessment_id: assessmentData?.id,
       participants: participants,
       observers: observers,
     });
@@ -124,6 +128,7 @@ export const ViewAssessment = () => {
       assessment_end_date: assessmentEndDateFieldData.format("YYYY-MM-DD"),
     });
   };
+
   const questionnaireTab = (
     <div className="m-4 mt-8">
       <p className="text-lg font-Inter font-semibold">
@@ -173,17 +178,6 @@ export const ViewAssessment = () => {
           </div>
         </div>
       )}
-    </div>
-  );
-
-  const responsesTab = (
-    <div className="m-4 mt-8">
-      <p>No Data To Show</p>
-    </div>
-  );
-  const resultsTab = (
-    <div className="m-4 mt-8">
-      <p>No Data To Show</p>
     </div>
   );
 
@@ -304,9 +298,9 @@ export const ViewAssessment = () => {
         {selectedCategory === "questionnaire" ? (
           <>{questionnaireTab}</>
         ) : selectedCategory === "responses" ? (
-          <>{responsesTab}</>
+          <>{<ParticipantResponses assessmentData={assessmentData} />}</>
         ) : selectedCategory === "results" ? (
-          <> {resultsTab}</>
+          <> {<ParticipantResult assessmentData={assessmentData} />}</>
         ) : (
           <></>
         )}
@@ -407,6 +401,29 @@ export const ViewAssessment = () => {
                     >
                       <Input />
                     </Form.Item>
+                    <Form.Item
+                      name={`observers[${index}].observerType`}
+                      label={`Type for Observer ${index + 1}`}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select a type for the Observer!",
+                        },
+                      ]}
+                      labelCol={{ span: 24 }}
+                    >
+                      <Select>
+                        <Select.Option key={"manager"} value={"manager"}>
+                          Manager
+                        </Select.Option>
+                        <Select.Option key={"reportee"} value={"reportee"}>
+                          Reportee
+                        </Select.Option>
+                        <Select.Option key={"peer"} value={"peer"}>
+                          Peer
+                        </Select.Option>
+                      </Select>
+                    </Form.Item>
                   </div>
                 )
               )}
@@ -436,5 +453,629 @@ export const ViewAssessment = () => {
         </Modal>
       </div>
     </>
+  );
+};
+
+const ParticipantResponses = ({ assessmentData }) => {
+  const categories = {
+    participant: "Participant",
+    observer: "Observer",
+  };
+
+  const [searchText, setSearchText] = useState("");
+  const [searchedData, setSearchedData] = useState(null);
+  const [responseValue, setResponseValue] = useState(null);
+  const [currentrResponseData, setCurrentResponseData] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("participant");
+  const [participantObservers, setParticipantObservers] = useState(null);
+  const [currentObserverIdSelected, setCurrentObserverIdSelected] =
+    useState(null);
+
+  const {
+    data: getParticipantsResultResponseData,
+    isLoading: getParticipantsResultResponseLoading,
+    error: getParticipantsResultResponseError,
+    getData: getParticipantsResultResponse,
+  } = useGetApi(
+    `${process.env.REACT_APP_BASE_URL}/assessmentApi/get-participants-response-result/${assessmentData?.id}`
+  );
+
+  const handleSearch = (searchText) => {
+    setSearchText(searchText);
+    if (!searchText) {
+      setSearchedData(null);
+    } else {
+      const searchData = getParticipantsResultResponseData?.filter(
+        (participantResponse) =>
+          participantResponse.participant?.name
+            ?.toLowerCase()
+            ?.includes(searchText?.toLowerCase())
+      );
+      setSearchedData(searchData);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchText("");
+    setSearchedData(null);
+  };
+
+  const handleOnChangeRespondentsRadio = (e) => {
+    setResponseValue(e.target.value);
+    const selectedResponse = getParticipantsResultResponseData.find(
+      (participantResponse) =>
+        participantResponse.participant.id === e.target.value
+    );
+    setCurrentResponseData(selectedResponse);
+  };
+
+  const calculateResponseOfQuestion = (questionId) => {
+    if (getParticipantsResultResponseData) {
+      const assessmentResponse = getParticipantsResultResponseData.find(
+        (response) =>
+          response.participant.id === currentrResponseData?.participant?.id
+      );
+
+      return assessmentResponse?.participant_response[questionId];
+    }
+    return 0;
+  };
+
+  const calculateResponseOfQuestionForObserver = (questionId) => {};
+  const handleObserverSelectChange = (value) => {
+    setCurrentObserverIdSelected(value);
+  };
+  // console.log(assessmentData);
+  useEffect(() => {
+    if (assessmentData && currentrResponseData) {
+      const selectedParticipantsObservers =
+        assessmentData.participants_observers.find(
+          (participantsObservers) =>
+            participantsObservers.participant.id ===
+            currentrResponseData.participant.id
+        );
+
+      if (selectedParticipantsObservers) {
+        const observers = selectedParticipantsObservers.observers.map(
+          (observer) => observer
+        );
+
+        setParticipantObservers(observers);
+      }
+    }
+  }, [assessmentData, currentrResponseData]);
+
+  useEffect(() => {
+    if (
+      getParticipantsResultResponseData &&
+      getParticipantsResultResponseData.length > 0
+    ) {
+      setResponseValue(getParticipantsResultResponseData[0]?.participant?.id);
+      setCurrentResponseData(getParticipantsResultResponseData[0]);
+    }
+  }, [getParticipantsResultResponseData]);
+
+  if (getParticipantsResultResponseLoading) {
+    return <Spin />;
+  } else {
+    return (
+      <>
+        <div className=" mt-4">
+          <div className="flex m-4 border border-gray-300 rounded-t-lg">
+            <div className="w-1/4 border-r border-gray-300 ">
+              <div className="p-4 w-full bg-bg-1 border-b border-gray-300 rounded-tl-lg">
+                <p className="text-xl font-semibold">Respondents</p>
+              </div>
+              <div className="p-4 border-b border-gray-300">
+                <Input
+                  placeholder="Respondent Name Search..."
+                  value={searchText}
+                  onChange={(event) => handleSearch(event.target.value)}
+                  prefix={<SearchOutlined style={{ color: "gray" }} />}
+                  suffix={
+                    searchText && (
+                      <CloseCircleOutlined
+                        style={{ color: "gray", cursor: "pointer" }}
+                        onClick={clearSearch}
+                      />
+                    )
+                  }
+                  className="max-w-[250px] lg:ml-3"
+                />
+              </div>
+              <div
+                className="overflow-y-auto custom-scrollbar p-6"
+                style={{ height: "calc(100vh - 42vh)" }}
+              >
+                <Radio.Group
+                  onChange={handleOnChangeRespondentsRadio}
+                  value={responseValue}
+                >
+                  <Space direction="vertical">
+                    {(searchedData
+                      ? searchedData
+                      : getParticipantsResultResponseData
+                    )?.map((participantResponse, index) => (
+                      <Radio
+                        key={participantResponse.participant.id}
+                        value={participantResponse.participant.id}
+                        className={index > 0 ? "mt-4" : ""}
+                      >
+                        {participantResponse.participant.name}
+                      </Radio>
+                    ))}
+                  </Space>
+                </Radio.Group>
+              </div>
+            </div>
+            <div className="w-3/4">
+              <div className="p-4 w-full bg-bg-1 border-b  border-gray-300 rounded-tr-lg">
+                <p className="text-xl font-semibold pl-4">
+                  {currentrResponseData?.participant?.name}
+                </p>
+              </div>
+              <div className="m-2 lg:h-[450px] overflow-y-auto custom-scrollbar">
+                <div className="flex justify-between">
+                  <div className="flex space-x-2 ">
+                    {Object.keys(categories).map((category, index) => {
+                      return (
+                        <div
+                          key={index}
+                          onClick={() => setSelectedCategory(category)}
+                          className={`flex p-2 ml-2 justify-center items-center space-x-4 rounded-lg border cursor-pointer shadow-md !w-[138px] ${
+                            selectedCategory === category
+                              ? "border-primary-1 bg-primary-4"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {selectedCategory === category && (
+                            <CheckOutlined className="mr-2" />
+                          )}
+                          {`${categories[category]}`}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {selectedCategory === "observer" && (
+                    <>
+                      <Select
+                        style={{ width: 200 }}
+                        placeholder="Select a Observer"
+                        onChange={handleObserverSelectChange}
+                        className="mr-2 mt-1"
+                        value={currentObserverIdSelected}
+                      >
+                        {participantObservers.map((observer) => (
+                          <Select.Option key={observer.id} value={observer.id}>
+                            {observer.name}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </>
+                  )}
+                </div>
+                {selectedCategory === "participant" ? (
+                  <div className="m-4">
+                    {assessmentData && (
+                      <div>
+                        {Object.values(
+                          assessmentData.questionnaire.questions.reduce(
+                            (competencies, question) => {
+                              if (!competencies[question.competency.name]) {
+                                competencies[question.competency.name] = [];
+                              }
+                              competencies[question.competency.name].push(
+                                question
+                              );
+                              return competencies;
+                            },
+                            {}
+                          )
+                        ).map((questions, index) => (
+                          <div
+                            key={index}
+                            className={`border-t border-l border-r border-gray ${
+                              index === 0 ? "rounded-t-lg" : ""
+                            }`}
+                          >
+                            <div
+                              className={`p-4 border-b border-gray bg-gray-100 ${
+                                index === 0 ? "rounded-t-lg" : ""
+                              }`}
+                            >
+                              <p className=" text-text-2 text-base font-semibold leading-6">
+                                {questions[0].competency.name}
+                              </p>
+                            </div>
+
+                            {questions.map((question, index) => (
+                              <div key={question.id} className="">
+                                <div className="border-b border-gray p-4">
+                                  {" "}
+                                  <p className="text-text-1 text-regular  text-base ml-2 font-normal leading-6 tracking-[0.035em]">
+                                    {`${index + 1}. `}
+                                    {question.self_question}
+                                  </p>
+                                  <div className="flex items-center justify-start ml-2.5 mt-4 mb-2 text-center  gap-6">
+                                    {assessmentData?.rating_type === "1-10"
+                                      ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]?.map(
+                                          (number, index) => (
+                                            <div
+                                              key={index}
+                                              className={`border rounded-full w-12 h-12 flex items-center justify-center  ${
+                                                index < 3
+                                                  ? "border-red-700"
+                                                  : index < 7
+                                                  ? "border-amber-500"
+                                                  : "border-success"
+                                              } ${
+                                                calculateResponseOfQuestion(
+                                                  question.id
+                                                ) === number && number <= 3
+                                                  ? "bg-red-600 text-white"
+                                                  : calculateResponseOfQuestion(
+                                                      question.id
+                                                    ) === number && number <= 7
+                                                  ? "bg-rating-1 text-white"
+                                                  : calculateResponseOfQuestion(
+                                                      question.id
+                                                    ) === number && number <= 10
+                                                  ? "bg-success text-white"
+                                                  : ""
+                                              }`}
+                                            >
+                                              {number}
+                                            </div>
+                                          )
+                                        )
+                                      : assessmentData?.rating_type === "1-5"
+                                      ? [1, 2, 3, 4, 5]?.map(
+                                          (number, index) => (
+                                            <div
+                                              key={index}
+                                              className={`border rounded-full w-12 h-12 flex items-center justify-center  cursor-pointer ${
+                                                index < 2
+                                                  ? "border-red-700 "
+                                                  : index < 3
+                                                  ? "border-amber-500 "
+                                                  : "border-success "
+                                              } ${
+                                                calculateResponseOfQuestion(
+                                                  question.id
+                                                ) === number && number <= 2
+                                                  ? "bg-red-600 text-white"
+                                                  : calculateResponseOfQuestion(
+                                                      question.id
+                                                    ) === number && number <= 3
+                                                  ? "bg-rating-1 text-white"
+                                                  : calculateResponseOfQuestion(
+                                                      question.id
+                                                    ) === number && number <= 5
+                                                  ? "bg-success text-white"
+                                                  : ""
+                                              }`}
+                                            >
+                                              {number}
+                                            </div>
+                                          )
+                                        )
+                                      : null}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : selectedCategory === "observer" &&
+                  currentObserverIdSelected ? (
+                  <div className="m-4">
+                    {assessmentData && (
+                      <div>
+                        {Object.values(
+                          assessmentData.questionnaire.questions.reduce(
+                            (competencies, question) => {
+                              if (!competencies[question.competency.name]) {
+                                competencies[question.competency.name] = [];
+                              }
+                              competencies[question.competency.name].push(
+                                question
+                              );
+                              return competencies;
+                            },
+                            {}
+                          )
+                        ).map((questions, index) => (
+                          <div
+                            key={index}
+                            className={`border-t border-l border-r border-gray ${
+                              index === 0 ? "rounded-t-lg" : ""
+                            }`}
+                          >
+                            <div
+                              className={`p-4 border-b border-gray bg-gray-100 ${
+                                index === 0 ? "rounded-t-lg" : ""
+                              }`}
+                            >
+                              <p className=" text-text-2 text-base font-semibold leading-6">
+                                {questions[0].competency.name}
+                              </p>
+                            </div>
+
+                            {questions.map((question, index) => (
+                              <div key={question.id} className="">
+                                <div className="border-b border-gray p-4">
+                                  {" "}
+                                  <p className="text-text-1 text-regular  text-base ml-2 font-normal leading-6 tracking-[0.035em]">
+                                    {`${index + 1}. `}
+                                    {question.observer_question}
+                                  </p>
+                                  <div className="flex items-center justify-start ml-2.5 mt-4 mb-2 text-center  gap-6">
+                                    {assessmentData?.rating_type === "1-10"
+                                      ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]?.map(
+                                          (number, index) => (
+                                            <div
+                                              key={index}
+                                              className={`border rounded-full w-12 h-12 flex items-center justify-center  ${
+                                                index < 3
+                                                  ? "border-red-700"
+                                                  : index < 7
+                                                  ? "border-amber-500"
+                                                  : "border-success"
+                                              } ${
+                                                calculateResponseOfQuestionForObserver(
+                                                  question.id
+                                                ) === number && number <= 3
+                                                  ? "bg-red-600 text-white"
+                                                  : calculateResponseOfQuestionForObserver(
+                                                      question.id
+                                                    ) === number && number <= 7
+                                                  ? "bg-rating-1 text-white"
+                                                  : calculateResponseOfQuestionForObserver(
+                                                      question.id
+                                                    ) === number && number <= 10
+                                                  ? "bg-success text-white"
+                                                  : ""
+                                              }`}
+                                            >
+                                              {number}
+                                            </div>
+                                          )
+                                        )
+                                      : assessmentData?.rating_type === "1-5"
+                                      ? [1, 2, 3, 4, 5]?.map(
+                                          (number, index) => (
+                                            <div
+                                              key={index}
+                                              className={`border rounded-full w-12 h-12 flex items-center justify-center  cursor-pointer ${
+                                                index < 2
+                                                  ? "border-red-700 "
+                                                  : index < 3
+                                                  ? "border-amber-500 "
+                                                  : "border-success "
+                                              } ${
+                                                calculateResponseOfQuestionForObserver(
+                                                  question.id
+                                                ) === number && number <= 2
+                                                  ? "bg-red-600 text-white"
+                                                  : calculateResponseOfQuestionForObserver(
+                                                      question.id
+                                                    ) === number && number <= 3
+                                                  ? "bg-rating-1 text-white"
+                                                  : calculateResponseOfQuestionForObserver(
+                                                      question.id
+                                                    ) === number && number <= 5
+                                                  ? "bg-success text-white"
+                                                  : ""
+                                              }`}
+                                            >
+                                              {number}
+                                            </div>
+                                          )
+                                        )
+                                      : null}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+              <div className="flex justify-between mb-2 mr-4 ml-4"></div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+};
+
+const ParticipantResult = ({ assessmentData }) => {
+  const [searchText, setSearchText] = useState("");
+  const [searchedData, setSearchedData] = useState(null);
+
+  const [responseValue, setResponseValue] = useState(null);
+  const [currentrResponseData, setCurrentResponseData] = useState(null);
+
+  const {
+    data: getParticipantsResultResponseData,
+    isLoading: getParticipantsResultResponseLoading,
+    error: getParticipantsResultResponseError,
+    getData: getParticipantsResultResponse,
+  } = useGetApi(
+    `${process.env.REACT_APP_BASE_URL}/assessmentApi/get-participants-response-result/${assessmentData?.id}`
+  );
+
+  const handleSearch = (searchText) => {
+    setSearchText(searchText);
+    if (!searchText) {
+      setSearchedData(null);
+    } else {
+      const searchData = getParticipantsResultResponseData?.filter(
+        (participantResponse) =>
+          participantResponse.participant?.name
+            ?.toLowerCase()
+            ?.includes(searchText?.toLowerCase())
+      );
+      setSearchedData(searchData);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchText("");
+    setSearchedData(null);
+  };
+
+  const handleOnChangeRespondentsRadio = (e) => {
+    setResponseValue(e.target.value);
+    const selectedResponse = getParticipantsResultResponseData.find(
+      (participantResponse) =>
+        participantResponse.participant.id === e.target.value
+    );
+    setCurrentResponseData(selectedResponse);
+  };
+
+  useEffect(() => {
+    if (
+      getParticipantsResultResponseData &&
+      getParticipantsResultResponseData.length > 0
+    ) {
+      setResponseValue(getParticipantsResultResponseData[0]?.participant?.id);
+      setCurrentResponseData(getParticipantsResultResponseData[0]);
+    }
+  }, [getParticipantsResultResponseData]);
+
+  return (
+    <div className=" mt-4">
+      <div className="flex m-4 border border-gray-300 rounded-t-lg">
+        <div className="w-1/4 border-r border-gray-300 ">
+          <div className="p-4 w-full bg-bg-1 border-b border-gray-300 rounded-tl-lg">
+            <p className="text-xl font-semibold">Respondents</p>
+          </div>
+          <div className="p-4 border-b border-gray-300">
+            <Input
+              placeholder="Respondent Name Search..."
+              value={searchText}
+              onChange={(event) => handleSearch(event.target.value)}
+              prefix={<SearchOutlined style={{ color: "gray" }} />}
+              suffix={
+                searchText && (
+                  <CloseCircleOutlined
+                    style={{ color: "gray", cursor: "pointer" }}
+                    onClick={clearSearch}
+                  />
+                )
+              }
+              className="max-w-[250px] lg:ml-3"
+            />
+          </div>
+          <div
+            className="overflow-y-auto custom-scrollbar p-6"
+            style={{ height: "calc(100vh - 42vh)" }}
+          >
+            <Radio.Group
+              onChange={handleOnChangeRespondentsRadio}
+              value={responseValue}
+            >
+              <Space direction="vertical">
+                {(searchedData
+                  ? searchedData
+                  : getParticipantsResultResponseData
+                )?.map((participantResponse, index) => (
+                  <Radio
+                    key={participantResponse.participant.id}
+                    value={participantResponse.participant.id}
+                    className={index > 0 ? "mt-4" : ""}
+                  >
+                    {participantResponse.participant.name}
+                  </Radio>
+                ))}
+              </Space>
+            </Radio.Group>
+          </div>
+        </div>
+        <div className="w-3/4">
+          <div className="p-4 w-full bg-bg-1 border-b  border-gray-300 rounded-tr-lg">
+            <p className="text-xl font-semibold pl-4">
+              {currentrResponseData?.participant?.name}
+            </p>
+          </div>
+          <div className="m-2 lg:h-[450px] overflow-y-auto custom-scrollbar">
+            {assessmentData && (
+              <div>
+                {Object.values(
+                  assessmentData.questionnaire.questions.reduce(
+                    (competencies, question) => {
+                      if (!competencies[question.competency.name]) {
+                        competencies[question.competency.name] = [];
+                      }
+                      competencies[question.competency.name].push(question);
+                      return competencies;
+                    },
+                    {}
+                  )
+                ).map((questions, index) => (
+                  <div
+                    key={index}
+                    className="border rounded-lg border-gray mt-4 m-8 ml-4"
+                  >
+                    <div className="m-4 pb-4 border-b border-gray">
+                      <p className=" text-text-2 text-base font-semibold leading-6">
+                        {questions[0].competency.name}
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center ">
+                        <div className="border-r border-gray !w-[500px]">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 ml-6  bg-rating-2 rounded-full items-center flex justify-center">
+                              <p>S</p>
+                            </div>
+                            <p>Self</p>
+                          </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8  ml-6  bg-rating-2 rounded-full items-center flex justify-center ">
+                              <p>M</p>
+                            </div>
+                            <p>Manager</p>
+                          </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8  ml-6  bg-rating-2 rounded-full items-center flex justify-center ">
+                              <p>S</p>
+                            </div>
+                            <p>Reportee</p>
+                          </div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8  ml-6 bg-rating-2 rounded-full items-center flex justify-center ">
+                              <p>S</p>
+                            </div>
+                            <p>Peers</p>
+                          </div>
+                        </div>
+                        <div className="ml-24 ">
+                          <Progress
+                            type="circle"
+                            percent={75}
+                            size="large"
+                            strokeColor={{ from: "#CC3A92", to: "#7E39A4" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex justify-between mb-2 mr-4 ml-4"></div>
+        </div>
+      </div>
+    </div>
   );
 };
