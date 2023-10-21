@@ -26,6 +26,8 @@ import { Results } from "./pages/participant/Results";
 import { StartAssessment } from "./pages/participant/start-assessment/StartAssessment";
 import { ObserverLogin } from "./pages/observer/ObserverLogin";
 import { ObserversAssessment } from "./pages/observer/ObserversAssessment";
+import { StartObserverAssessment } from "./pages/observer/StartObserverAssessment";
+import { ObserverAssessmentSubmissionPage } from "./pages/observer/ObserverAssessmentSubmissionPage";
 
 
 function App() {
@@ -106,6 +108,14 @@ function App() {
               <Route
                 path="/observer-assessment"
                 element={<ObserversAssessment />}
+              />
+              <Route
+                path="/start-observer-assessment"
+                element={<StartObserverAssessment />}
+              />
+              <Route
+                path="//observer-assessment-submission-page"
+                element={<ObserverAssessmentSubmissionPage />}
               />
               <Route
                 path="/meeraq/assessment"

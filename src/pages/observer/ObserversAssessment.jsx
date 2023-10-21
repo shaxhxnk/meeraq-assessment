@@ -46,7 +46,7 @@ export const ObserversAssessment = () => {
   };
 
   const handleStartAssessmentConfirm = () => {
-    // navigate("/meeraq/assessment", { state: { currentAssessmentData } });
+    navigate("/start-observer-assessment", { state: { currentAssessmentData } });
   };
 
   const columns = [
