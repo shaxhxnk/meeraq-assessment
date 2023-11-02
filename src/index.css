@@ -9,6 +9,7 @@
   --primary-2: #652e83;
   --primary-3: #cbb0db;
   --primary-4: #f9f0ff;
+  --primary-5: #f3dfff;
   --text-1: #1d1d1d;
   --text-2: #393939;
   --text-3: #565656;
@@ -27,6 +28,8 @@
   --success: #027a48;
   --success-bg: #e1fff3;
   --tooltip: #202020;
+  --rating-1:#ED920A;
+  --rating-2:#ff8c5e;
 }
 
 * {

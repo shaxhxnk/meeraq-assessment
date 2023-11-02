@@ -19,6 +19,8 @@ module.exports = {
         "bg-2": "var(--bg-2)",
         "bg-3": "var(--bg-3)",
         "bg-4": "var(--bg-4)",
+        "rating-1": "var(--rating-1)",
+        "rating-2": "var(--rating-2)",
         "stroke-1": "var(--stroke-1)",
         "stroke-2": "var(--stroke-2)",
         error: "var(--error)",
